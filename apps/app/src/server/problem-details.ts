@@ -1,5 +1,4 @@
 import { ZodError } from "zod";
-import { TodoNotFoundError } from "@corely/modules-todos";
 
 export function problemFromError(error: unknown): Response {
   if (error instanceof Error && "type" in error) {
@@ -23,18 +22,6 @@ export function problemFromError(error: unknown): Response {
         },
       },
       { status },
-    );
-  }
-
-  if (error instanceof TodoNotFoundError) {
-    return Response.json(
-      {
-        type: "about:blank",
-        title: "Not Found",
-        status: 404,
-        detail: error.message,
-      },
-      { status: 404 },
     );
   }
 

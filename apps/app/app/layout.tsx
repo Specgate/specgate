@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Providers } from "@/app/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Corely App",
-  description: "Next.js migration shell for Corely",
+  title: "SpecPilot - Spec-first workspace for AI-powered teams",
+  description:
+    "Turn messy requests into approved specs, hand clean context to coding agents, and let stakeholders preview before release.",
 };
 
 export default function RootLayout({
@@ -14,9 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <Providers>{children}</Providers>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

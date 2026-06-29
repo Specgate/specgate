@@ -1,8 +1,8 @@
+import { type DocumentAggregate } from "../../../domain/src/documents/document.aggregate";
 import {
-  type DocumentAggregate,
   type DocumentLinkEntityType,
   type DocumentType,
-} from "@corely/domain";
+} from "../../../domain/src/documents/document.types";
 
 export interface DocumentRepoPort {
   create(document: DocumentAggregate): Promise<void>;

@@ -12,7 +12,7 @@ export function getPrisma(): PrismaClient {
   if (!globalThis.__corelyPrisma) {
     const url = process.env.DATABASE_URL;
     if (!url) {
-      throw new Error("DATABASE_URL must be set before using the Next.js todos API");
+      throw new Error("DATABASE_URL must be set before using the SpecGate API");
     }
 
     const pool = new Pool({

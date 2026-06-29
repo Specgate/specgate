@@ -12,6 +12,7 @@
     "jsx": "preserve",
     "allowJs": false,
     "strict": false,
+    "strictNullChecks": true,
     "exactOptionalPropertyTypes": false,
     "noEmit": true,
     "incremental": true,

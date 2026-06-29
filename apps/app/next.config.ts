@@ -11,7 +11,6 @@ const nextConfig: NextConfig = {
     "@corely/modules-planning",
     "@corely/modules-preview",
     "@corely/modules-specs",
-    "@corely/modules-todos",
     "@corely/ui",
   ],
   outputFileTracingRoot: path.join(process.cwd(), "../.."),

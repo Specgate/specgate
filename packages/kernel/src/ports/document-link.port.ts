@@ -1,4 +1,4 @@
-import { type DocumentLinkEntityType } from "@corely/domain";
+import { type DocumentLinkEntityType } from "../../../domain/src/documents/document.types";
 
 export interface DocumentLinkRepoPort {
   createLink(params: {

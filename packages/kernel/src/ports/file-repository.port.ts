@@ -1,4 +1,5 @@
-import { type FileEntity, type FileKind } from "@corely/domain";
+import { type FileEntity } from "../../../domain/src/documents/file.entity";
+import { type FileKind } from "../../../domain/src/documents/document.types";
 
 export interface FileRepoPort {
   create(file: FileEntity): Promise<void>;
