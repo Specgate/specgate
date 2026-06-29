@@ -6,7 +6,7 @@ The monorepo now has one active frontend/runtime stack: **Next.js App Router**.
 
 - TypeScript base configs: `packages/tooling/tsconfig`
 - Tailwind preset: `packages/tooling/tailwind-preset`
-- shared UI tokens: `packages/ui/src/tokens.css`
+- App UI tokens: `apps/app/app/globals.css`
 
 ## App-specific configuration
 
