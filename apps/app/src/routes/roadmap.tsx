@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { suggestRoadmapPlan } from "@/lib/mock-ai";
+import { suggestRoadmapPlan as suggestRoadmapPlanApi } from "@/lib/specgate-api";
 
 const lanes: RoadmapLane[] = ["Now", "Next", "Later", "Icebox"];
 
@@ -33,6 +33,18 @@ export const Route = createFileRoute("/roadmap")({
 function RoadmapPage() {
   const { state, setSpecLane } = useDemoStore();
   const [open, setOpen] = useState(false);
+  const [suggestion, setSuggestion] = useState<string>("");
+
+  async function openSuggestion() {
+    setOpen(true);
+    setSuggestion("Loading suggestion...");
+    try {
+      const response = await suggestRoadmapPlanApi(state.currentProjectId);
+      setSuggestion(response.data.summary);
+    } catch (error) {
+      setSuggestion(error instanceof Error ? error.message : "Could not load roadmap suggestion.");
+    }
+  }
 
   async function applyPlan() {
     try {
@@ -55,7 +67,7 @@ function RoadmapPage() {
         title="Roadmap"
         description="Now / Next / Later / Icebox. Keep planning lightweight."
         actions={
-          <Button onClick={() => setOpen(true)} className="gap-1.5">
+          <Button onClick={openSuggestion} className="gap-1.5">
             <Sparkles className="h-4 w-4" /> AI Suggest Plan
           </Button>
         }
@@ -129,7 +141,7 @@ function RoadmapPage() {
             <DialogDescription>AI-generated based on priority and approval status.</DialogDescription>
           </DialogHeader>
           <pre className="whitespace-pre-wrap text-sm text-muted-foreground bg-muted/30 rounded-md p-3 border border-border">
-            {suggestRoadmapPlan()}
+            {suggestion}
           </pre>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>

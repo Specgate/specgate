@@ -9,7 +9,6 @@ import { users } from "@/lib/mock-data";
 import { UserAvatar } from "@/components/app/Pills";
 import { GitBranch, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { fakeDelay } from "@/lib/mock-ai";
 import { useState } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
@@ -27,8 +26,8 @@ function SettingsPage() {
   const [inviteEmail, setInviteEmail] = useState("");
 
   async function testSync() {
-    toast.loading("Testing Git sync…", { id: "git" });
-    await fakeDelay(600);
+    toast.loading("Testing Git sync...", { id: "git" });
+    await new Promise((resolve) => setTimeout(resolve, 600));
     toast.dismiss("git");
     toast.success("Git sync test successful.");
   }
@@ -90,10 +89,10 @@ function SettingsPage() {
           </div>
         </Card>
 
-        <Card title="Demo mode">
-          <p className="text-sm text-muted-foreground">Reset all demo data to its original state.</p>
+        <Card title="Demo data">
+          <p className="text-sm text-muted-foreground">Reset and reseed the API-backed demo workspace.</p>
           <Button variant="outline" className="gap-1.5 mt-3" onClick={() => setResetOpen(true)}>
-            <RotateCcw className="h-3.5 w-3.5" /> Reset demo data
+            <RotateCcw className="h-3.5 w-3.5" /> Reset API data
           </Button>
         </Card>
       </div>
@@ -101,8 +100,8 @@ function SettingsPage() {
       <Dialog open={resetOpen} onOpenChange={setResetOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset demo data?</DialogTitle>
-            <DialogDescription>All specs, comments, and statuses will return to their original values.</DialogDescription>
+            <DialogTitle>Reset API data?</DialogTitle>
+            <DialogDescription>All specs, comments, and statuses will be reseeded through the SpecGate API.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setResetOpen(false)}>Cancel</Button>

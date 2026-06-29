@@ -482,7 +482,7 @@ function Footer() {
         ))}
       </div>
       <div className="border-t border-border px-6 py-5 text-xs text-muted-foreground text-center">
-        © 2026 SpecPilot · Frontend demo · Mock data only
+        © 2026 SpecPilot · API-backed product demo
       </div>
     </footer>
   );

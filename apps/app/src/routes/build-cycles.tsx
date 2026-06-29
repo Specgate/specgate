@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { summarizeBuildCycle } from "@/lib/mock-ai";
+import { summarizeBuildCycle } from "@/lib/specgate-api";
 
 export const Route = createFileRoute("/build-cycles")({
   head: () => ({ meta: [{ title: "Build Cycles — SpecPilot" }] }),
@@ -23,6 +23,18 @@ export const Route = createFileRoute("/build-cycles")({
 function BuildCyclesPage() {
   const { state } = useDemoStore();
   const [open, setOpen] = useState(false);
+  const [summary, setSummary] = useState("");
+
+  async function openSummary(cycleId: string) {
+    setOpen(true);
+    setSummary("Loading summary...");
+    try {
+      const response = await summarizeBuildCycle(cycleId);
+      setSummary(`Cycle includes ${response.data.specCount} queued specs.`);
+    } catch (error) {
+      setSummary(error instanceof Error ? error.message : "Could not summarize build cycle.");
+    }
+  }
 
   return (
     <AppShell>
@@ -49,7 +61,7 @@ function BuildCyclesPage() {
                     <p className="text-xs text-muted-foreground mt-1">{cycle.startDate} → {cycle.endDate}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="gap-1.5"><Sparkles className="h-3.5 w-3.5" />AI summarize cycle</Button>
+                    <Button variant="outline" size="sm" onClick={() => void openSummary(cycle.id)} className="gap-1.5"><Sparkles className="h-3.5 w-3.5" />AI summarize cycle</Button>
                   </div>
                 </div>
                 <div className="mt-4">
@@ -81,7 +93,7 @@ function BuildCyclesPage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Build cycle summary</DialogTitle></DialogHeader>
-          <pre className="whitespace-pre-wrap text-sm text-muted-foreground bg-muted/30 rounded-md p-3 border border-border">{summarizeBuildCycle()}</pre>
+          <pre className="whitespace-pre-wrap text-sm text-muted-foreground bg-muted/30 rounded-md p-3 border border-border">{summary}</pre>
           <DialogFooter><Button onClick={() => setOpen(false)}>Close</Button></DialogFooter>
         </DialogContent>
       </Dialog>

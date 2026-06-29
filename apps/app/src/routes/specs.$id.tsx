@@ -9,11 +9,16 @@ import {
   Sparkles, FileText, Code2, ListChecks, Send, Eye, PlayCircle,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { users, milestones } from "@/lib/mock-data";
-import { generateAgentContext, runSpecCodeCheck, fakeDelay } from "@/lib/mock-ai";
+import { users } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
-import type { SpecStatus } from "@/types/demo";
+import type { Spec, SpecStatus } from "@/types/demo";
+import {
+  addPreviewUrlForSpec,
+  generateAgentContextForSpec,
+  runSpecCodeCheckForSpec,
+  syncSpecToGit,
+} from "@/lib/specgate-api";
 
 export const Route = createFileRoute("/specs/$id")({
   head: ({ params }) => ({ meta: [{ title: `${params.id} — SpecPilot` }] }),
@@ -37,7 +42,7 @@ function SpecDetail() {
       <AppShell>
         <div className="p-10 text-center">
           <h2 className="text-xl font-semibold">Spec not found</h2>
-          <p className="text-muted-foreground mt-2 text-sm">{id} doesn't exist in the demo data.</p>
+          <p className="text-muted-foreground mt-2 text-sm">{id} was not returned by the SpecGate API.</p>
           <Button asChild className="mt-4"><Link to="/backlog">Back to backlog</Link></Button>
         </div>
       </AppShell>
@@ -45,31 +50,52 @@ function SpecDetail() {
   }
 
   const owner = users.find((u) => u.id === spec.ownerId);
-  const ms = milestones.find((m) => m.id === spec.milestoneId);
+  const ms = state.milestones.find((m) => m.id === spec.milestoneId);
 
   async function generate() {
-    setGenerating(true);
-    await fakeDelay(700);
-    setAgentContext(generateAgentContext(spec!));
-    setGenerating(false);
-    toast.success("Agent context generated from approved spec.");
+    try {
+      setGenerating(true);
+      const response = await generateAgentContextForSpec(spec!);
+      setAgentContext(response.data.markdown);
+      toast.success("Agent context generated from approved spec.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not generate agent context.");
+    } finally {
+      setGenerating(false);
+    }
   }
 
   async function runCheck() {
-    toast.loading("Running spec-code check…", { id: "check" });
-    await fakeDelay(900);
-    const r = runSpecCodeCheck(spec!);
-    setCheckResult(r.message);
-    toast.dismiss("check");
-    toast[r.ok ? "success" : "warning"]("Spec-code check complete.");
+    try {
+      toast.loading("Running spec-code check...", { id: "check" });
+      const response = await runSpecCodeCheckForSpec(spec!);
+      const findings = response.data.mismatchFindings;
+      setCheckResult(
+        findings.length
+          ? `${response.data.summary}\n\n${findings
+              .map((finding) => `- [${finding.severity}] ${finding.message}${finding.file ? ` (${finding.file})` : ""}`)
+              .join("\n")}`
+          : response.data.summary,
+      );
+      toast.dismiss("check");
+      toast[findings.length ? "warning" : "success"]("Spec-code check complete.");
+    } catch (error) {
+      toast.dismiss("check");
+      toast.error(error instanceof Error ? error.message : "Spec-code check failed.");
+    }
   }
 
   async function syncToGit() {
-    toast.loading("Syncing to Git…", { id: "sync" });
-    await fakeDelay(800);
-    updateSpec(spec!.id, { gitSyncedAt: new Date().toISOString().slice(0, 10) });
-    toast.dismiss("sync");
-    toast.success("Spec synced to Git.");
+    try {
+      toast.loading("Syncing to Git...", { id: "sync" });
+      await syncSpecToGit(spec!);
+      await updateSpec(spec!.id, { gitSyncedAt: new Date().toISOString().slice(0, 10) });
+      toast.dismiss("sync");
+      toast.success("Spec synced to Git.");
+    } catch (error) {
+      toast.dismiss("sync");
+      toast.error(error instanceof Error ? error.message : "Git sync failed.");
+    }
   }
 
   return (
@@ -95,7 +121,16 @@ function SpecDetail() {
               {spec.gitSyncedAt && <span className="inline-flex items-center gap-1"><GitBranch className="h-3 w-3" /> Synced {spec.gitSyncedAt}</span>}
             </div>
           </div>
-          <StatusActions spec={spec} syncToGit={syncToGit} setStatus={(st) => { setSpecStatus(spec.id, st); toast.success("Status updated."); }} navigate={navigate} />
+          <StatusActions
+            spec={spec}
+            syncToGit={syncToGit}
+            setStatus={(st) => {
+              void setSpecStatus(spec.id, st)
+                .then(() => toast.success("Status updated."))
+                .catch((error) => toast.error(error instanceof Error ? error.message : "Status update failed."));
+            }}
+            navigate={navigate}
+          />
         </div>
       </div>
 
@@ -204,7 +239,7 @@ function SpecDetail() {
                 <div className="flex flex-wrap gap-2 mt-3">
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => toast.info("The approved spec sets 14-day expiry. One test fixture uses 7. Align fixtures with the spec.")}>Explain mismatch</Button>
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => toast.success("Fix checklist created.")}>Create fix checklist</Button>
-                  <Button size="sm" variant="default" className="h-7 text-xs" onClick={() => { updateSpec(spec.id, { warning: undefined }); toast.success("Mismatch marked resolved."); }}>Mark as resolved</Button>
+                    <Button size="sm" variant="default" className="h-7 text-xs" onClick={() => { void updateSpec(spec.id, { warning: undefined }); toast.success("Mismatch marked resolved."); }}>Mark as resolved</Button>
                 </div>
               </>
             ) : (
@@ -238,9 +273,12 @@ function SpecDetail() {
               <Textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Add a comment…" rows={2} className="text-sm" />
               <Button size="sm" className="w-full gap-1.5" onClick={() => {
                 if (!newComment.trim()) return;
-                addComment({ id: `c-${Date.now()}`, specId: spec.id, authorId: "u-ha", text: newComment, createdAt: new Date().toISOString().slice(0, 10) });
-                setNewComment("");
-                toast.success("Comment added.");
+                void addComment({ id: `c-${Date.now()}`, specId: spec.id, authorId: "u-ha", text: newComment, createdAt: new Date().toISOString().slice(0, 10) })
+                  .then(() => {
+                    setNewComment("");
+                    toast.success("Comment added.");
+                  })
+                  .catch((error) => toast.error(error instanceof Error ? error.message : "Could not add comment."));
               }}>
                 <Send className="h-3.5 w-3.5" /> Comment
               </Button>
@@ -285,9 +323,8 @@ function copy(text: string, msg: string) {
   toast.success(msg);
 }
 
-function technicalView(spec: ReturnType<typeof Object>): string {
-  // typed loosely on purpose
-  const s = spec as any;
+function technicalView(spec: Spec): string {
+  const s = spec;
   return `---
 id: ${s.id}
 title: ${s.title}
@@ -317,8 +354,8 @@ ${s.technicalNotes ? `## Technical Notes\n${s.technicalNotes}\n` : ""}`;
 function StatusActions({
   spec, syncToGit, setStatus, navigate,
 }: {
-  spec: { id: string; status: SpecStatus };
-  syncToGit: () => void;
+  spec: Spec;
+  syncToGit: () => Promise<void>;
   setStatus: (s: SpecStatus) => void;
   navigate: ReturnType<typeof useNavigate>;
 }) {
@@ -352,7 +389,15 @@ function StatusActions({
       { label: "Approve for Preview", onClick: () => setStatus("preview") },
     ],
     preview: [
-      { label: "Add Preview URL", onClick: () => toast.success("Preview URL saved."), variant: "outline" },
+      {
+        label: "Add Preview URL",
+        onClick: () => {
+          void addPreviewUrlForSpec(spec, `https://staging.launchos.dev/${spec.id.toLowerCase()}`)
+            .then(() => toast.success("Preview URL saved."))
+            .catch((error) => toast.error(error instanceof Error ? error.message : "Could not save preview URL."));
+        },
+        variant: "outline",
+      },
       { label: "Send to Stakeholder Review", onClick: () => setStatus("stakeholder_review") },
     ],
     stakeholder_review: [

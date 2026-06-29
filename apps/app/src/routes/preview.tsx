@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import type { Spec } from "@/types/demo";
+import { commentOnPreview, rejectPreview } from "@/lib/specgate-api";
 
 export const Route = createFileRoute("/preview")({
   head: () => ({ meta: [{ title: "Preview — SpecPilot" }] }),
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/preview")({
 });
 
 function PreviewPage() {
-  const { state, setSpecStatus } = useDemoStore();
+  const { state, refresh, setSpecStatus } = useDemoStore();
   const items = state.specs.filter((s) => ["stakeholder_review", "preview", "accepted"].includes(s.status) || s.previewUrl);
   const [open, setOpen] = useState<Spec | null>(null);
   const [reject, setReject] = useState<Spec | null>(null);
@@ -58,7 +59,18 @@ function PreviewPage() {
                 <Button size="sm" onClick={() => setOpen(s)} className="gap-1.5"><Eye className="h-3.5 w-3.5" /> Open Preview</Button>
                 {s.status === "stakeholder_review" && (
                   <>
-                    <Button size="sm" variant="outline" onClick={() => { setSpecStatus(s.id, "accepted"); toast.success("Preview approved by stakeholder."); }} className="gap-1.5 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        void setSpecStatus(s.id, "accepted")
+                          .then(() => toast.success("Preview approved by stakeholder."))
+                          .catch((error) =>
+                            toast.error(error instanceof Error ? error.message : "Could not approve preview."),
+                          );
+                      }}
+                      className="gap-1.5 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/10"
+                    >
                       <CheckCircle2 className="h-3.5 w-3.5" /> Approve
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setReject(s)} className="gap-1.5 text-rose-300 border-rose-500/30 hover:bg-rose-500/10">
@@ -72,13 +84,59 @@ function PreviewPage() {
         ))}
       </div>
 
-      {open && <PreviewModal spec={open} onClose={() => setOpen(null)} onApprove={() => { setSpecStatus(open.id, "accepted"); toast.success("Preview approved by stakeholder."); setOpen(null); }} onReject={() => { setReject(open); setOpen(null); }} />}
-      {reject && <RejectModal spec={reject} onClose={() => setReject(null)} onSubmit={(reason) => { setSpecStatus(reject.id, "developer_review"); toast.warning("Rejected and returned to Developer Review."); setReject(null); }} />}
+      {open && (
+        <PreviewModal
+          spec={open}
+          onClose={() => setOpen(null)}
+          onApprove={() => {
+            void setSpecStatus(open.id, "accepted")
+              .then(() => {
+                toast.success("Preview approved by stakeholder.");
+                setOpen(null);
+              })
+              .catch((error) =>
+                toast.error(error instanceof Error ? error.message : "Could not approve preview."),
+              );
+          }}
+          onComment={(feedback) => commentOnPreview(open, feedback)}
+          onReject={() => {
+            setReject(open);
+            setOpen(null);
+          }}
+        />
+      )}
+      {reject && (
+        <RejectModal
+          spec={reject}
+          onClose={() => setReject(null)}
+          onSubmit={(reason) => {
+            void rejectPreview(reject, reason)
+              .then(() => refresh())
+              .then(() => {
+                toast.warning("Rejected and returned to Developer Review.");
+                setReject(null);
+              })
+              .catch((error) => toast.error(error instanceof Error ? error.message : "Could not reject preview."));
+          }}
+        />
+      )}
     </AppShell>
   );
 }
 
-function PreviewModal({ spec, onClose, onApprove, onReject }: { spec: Spec; onClose: () => void; onApprove: () => void; onReject: () => void }) {
+function PreviewModal({
+  spec,
+  onClose,
+  onApprove,
+  onComment,
+  onReject,
+}: {
+  spec: Spec;
+  onClose: () => void;
+  onApprove: () => void;
+  onComment: (feedback: string) => Promise<unknown>;
+  onReject: () => void;
+}) {
   const [comment, setComment] = useState("");
   return (
     <Dialog open onOpenChange={onClose}>
@@ -115,7 +173,27 @@ function PreviewModal({ spec, onClose, onApprove, onReject }: { spec: Spec; onCl
             <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} placeholder="Leave a comment for the developer…" className="text-sm" />
             <div className="space-y-2">
               <Button size="sm" className="w-full gap-1.5" onClick={onApprove}><CheckCircle2 className="h-3.5 w-3.5" />Approve</Button>
-              <Button size="sm" variant="outline" className="w-full gap-1.5" onClick={() => { if (!comment.trim()) { toast.error("Add a comment first."); return; } toast.success("Comment sent to developer."); setComment(""); }}><Send className="h-3.5 w-3.5" />Comment</Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full gap-1.5"
+                onClick={() => {
+                  if (!comment.trim()) {
+                    toast.error("Add a comment first.");
+                    return;
+                  }
+                  void onComment(comment)
+                    .then(() => {
+                      toast.success("Comment sent to developer.");
+                      setComment("");
+                    })
+                    .catch((error) =>
+                      toast.error(error instanceof Error ? error.message : "Could not send comment."),
+                    );
+                }}
+              >
+                <Send className="h-3.5 w-3.5" />Comment
+              </Button>
               <Button size="sm" variant="outline" className="w-full gap-1.5 text-rose-300 border-rose-500/30 hover:bg-rose-500/10" onClick={onReject}><X className="h-3.5 w-3.5" />Reject</Button>
             </div>
           </div>

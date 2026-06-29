@@ -1,11 +1,14 @@
 import type {
   ActivityDto,
+  AgentContextDto,
   BuildCycleDto,
   BuildQueueItemDto,
   CommentDto,
   DecisionDto,
+  GitSyncRecordDto,
   MilestoneDto,
   PreviewReviewDto,
+  SpecCodeCheckDto,
   ProjectDto,
   SpecDto,
   SpecInput,
@@ -322,4 +325,58 @@ export async function runStatusAction(spec: Spec, status: Spec["status"]) {
   if (status === "accepted") return api(`/preview/specs/${specId}/approve`, { method });
   if (status === "done") return api(`/preview/specs/${specId}/mark-done`, { method });
   return updateSpec(spec, {});
+}
+
+export async function syncSpecToGit(spec: Spec) {
+  return api<ApiEnvelope<GitSyncRecordDto>>(`/agent/specs/${apiIdForSpec(spec)}/sync-git`, {
+    method: "POST",
+  });
+}
+
+export async function generateAgentContextForSpec(spec: Spec) {
+  return api<ApiEnvelope<AgentContextDto>>(`/agent/specs/${apiIdForSpec(spec)}/contexts`, {
+    method: "POST",
+    body: JSON.stringify({ targetAgent: "generic" }),
+  });
+}
+
+export async function runSpecCodeCheckForSpec(spec: Spec) {
+  return api<ApiEnvelope<SpecCodeCheckDto>>(`/agent/specs/${apiIdForSpec(spec)}/run-spec-check`, {
+    method: "POST",
+  });
+}
+
+export async function addPreviewUrlForSpec(spec: Spec, previewUrl: string) {
+  return api<ApiEnvelope<PreviewReviewDto>>(`/preview/specs/${apiIdForSpec(spec)}/add-url`, {
+    method: "POST",
+    body: JSON.stringify({ previewUrl, environment: "staging" }),
+  });
+}
+
+export async function commentOnPreview(spec: Spec, feedback: string) {
+  return api<ApiEnvelope<PreviewReviewDto>>(`/preview/specs/${apiIdForSpec(spec)}/comment`, {
+    method: "POST",
+    body: JSON.stringify({ feedback }),
+  });
+}
+
+export async function rejectPreview(spec: Spec, reason: string) {
+  return api<ApiEnvelope<PreviewReviewDto>>(`/preview/specs/${apiIdForSpec(spec)}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function suggestRoadmapPlan(projectId: string) {
+  return api<ApiEnvelope<{ summary: string }>>(
+    `/planning/roadmap/suggest?projectId=${encodeURIComponent(projectId)}`,
+    { method: "POST" },
+  );
+}
+
+export async function summarizeBuildCycle(buildCycleId: string) {
+  return api<ApiEnvelope<{ specCount: number }>>(
+    `/planning/build-cycles/${buildCycleId}/summary`,
+    { method: "POST" },
+  );
 }
