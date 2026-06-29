@@ -6,6 +6,7 @@ import type {
   CommentDto,
   DecisionDto,
   GitSyncRecordDto,
+  ImplementationRecordDto,
   MilestoneDto,
   PreviewReviewDto,
   SpecCodeCheckDto,
@@ -24,7 +25,7 @@ import type {
   RoadmapLane,
   Spec,
 } from "@/types/demo";
-import { users } from "./mock-data";
+import { users } from "./reference-data";
 
 type ApiEnvelope<T> = { data: T };
 
@@ -351,6 +352,26 @@ export async function addPreviewUrlForSpec(spec: Spec, previewUrl: string) {
     method: "POST",
     body: JSON.stringify({ previewUrl, environment: "staging" }),
   });
+}
+
+export async function linkImplementationBranchForSpec(spec: Spec, branchName: string) {
+  return api<ApiEnvelope<ImplementationRecordDto>>(
+    `/implementation/specs/${apiIdForSpec(spec)}/link-branch`,
+    {
+      method: "POST",
+      body: JSON.stringify({ branchName }),
+    },
+  );
+}
+
+export async function linkImplementationPullRequestForSpec(spec: Spec, pullRequestUrl: string) {
+  return api<ApiEnvelope<ImplementationRecordDto>>(
+    `/implementation/specs/${apiIdForSpec(spec)}/link-pr`,
+    {
+      method: "POST",
+      body: JSON.stringify({ pullRequestUrl }),
+    },
+  );
 }
 
 export async function commentOnPreview(spec: Spec, feedback: string) {

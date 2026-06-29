@@ -30,7 +30,10 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
   const [why, setWhy] = useState("");
   const [who, setWho] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
-  const [timeline, setTimeline] = useState("MVP");
+  const [timeline, setTimeline] = useState("");
+  const timelineIds = new Set(state.milestones.map((milestone) => milestone.id));
+  const selectedTimeline =
+    timeline && timelineIds.has(timeline) ? timeline : state.milestones[0]?.id ?? "none";
 
   async function submit() {
     if (!title.trim()) {
@@ -39,26 +42,27 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
     }
     const id = nextRequestId(state.specs);
     const lane: RoadmapLane = priority === "urgent" || priority === "high" ? "Now" : "Icebox";
+    const milestoneId = selectedTimeline === "none" ? "" : selectedTimeline;
     try {
       const created = await addSpec({
-      id,
-      title: title.slice(0, 80),
-      status: "request",
-      priority,
-      roadmapLane: lane,
-      milestoneId: timeline === "Private Beta" ? "beta" : timeline === "v1 Launch" ? "v1" : "mvp",
-      ownerId: "u-ha",
-      summary: title,
-      problem: why,
-      acceptanceCriteria: [],
-      outOfScope: [],
-      openQuestions: [
-        "Who is the primary user?",
-        "What does success look like?",
-        "What is explicitly out of scope?",
-      ],
-      decisions: [],
-      updatedAt: new Date().toISOString().slice(0, 10),
+        id,
+        title: title.slice(0, 80),
+        status: "request",
+        priority,
+        roadmapLane: lane,
+        milestoneId,
+        ownerId: "u-ha",
+        summary: title,
+        problem: why,
+        acceptanceCriteria: [],
+        outOfScope: [],
+        openQuestions: [
+          "Who is the primary user?",
+          "What does success look like?",
+          "What is explicitly out of scope?",
+        ],
+        decisions: [],
+        updatedAt: new Date().toISOString().slice(0, 10),
       });
       toast.success("Request created. AI has generated clarification questions.");
       onOpenChange(false);
@@ -104,12 +108,18 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
             </div>
             <div className="space-y-1.5">
               <Label>Desired timeline</Label>
-              <Select value={timeline} onValueChange={setTimeline}>
+              <Select value={selectedTimeline} onValueChange={setTimeline}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MVP">MVP</SelectItem>
-                  <SelectItem value="Private Beta">Private Beta</SelectItem>
-                  <SelectItem value="v1 Launch">v1 Launch</SelectItem>
+                  {state.milestones.length > 0 ? (
+                    state.milestones.map((milestone) => (
+                      <SelectItem key={milestone.id} value={milestone.id}>
+                        {milestone.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none">Unassigned</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { users } from "@/lib/mock-data";
+import { users } from "@/lib/reference-data";
 import { UserAvatar } from "@/components/app/Pills";
 import { GitBranch, RotateCcw } from "lucide-react";
 import { toast } from "sonner";

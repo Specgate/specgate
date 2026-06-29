@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo, useState } from "react";
-import { users, milestones } from "@/lib/mock-data";
+import { users } from "@/lib/reference-data";
 import type { SpecStatus } from "@/types/demo";
 import { Search, Plus, AlertTriangle } from "lucide-react";
 import { NewRequestModal } from "@/components/shared/NewRequestModal";
@@ -90,7 +90,7 @@ function BacklogPage() {
           )}
           {filtered.map((s) => {
             const owner = users.find((u) => u.id === s.ownerId);
-            const ms = milestones.find((m) => m.id === s.milestoneId);
+            const ms = state.milestones.find((m) => m.id === s.milestoneId);
             return (
               <Link
                 key={s.id}

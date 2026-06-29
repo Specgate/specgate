@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
 import { useDemoStore } from "@/lib/demo-store";
 import { StatusPill, PriorityPill, UserAvatar } from "@/components/app/Pills";
-import { users, milestones } from "@/lib/mock-data";
+import { users } from "@/lib/reference-data";
 import { AlertTriangle, Bot, GitBranch, Sparkles } from "lucide-react";
 import type { SpecStatus } from "@/types/demo";
 
@@ -54,7 +54,7 @@ function BuildQueuePage() {
                   )}
                   {items.map((s) => {
                     const assignee = users.find((u) => u.id === s.assigneeId);
-                    const ms = milestones.find((m) => m.id === s.milestoneId);
+                    const ms = state.milestones.find((m) => m.id === s.milestoneId);
                     return (
                       <Link key={s.id} to="/specs/$id" params={{ id: s.id }}
                         className="block rounded-lg border border-border bg-card p-3 hover:border-primary/40 transition-colors">

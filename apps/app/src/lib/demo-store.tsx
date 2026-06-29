@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { DemoState, Spec, SpecStatus, Comment, Activity, DemoMode, RoadmapLane } from "@/types/demo";
-import { initialState } from "./mock-data";
+import { initialState } from "./reference-data";
 import {
   addSpecComment,
   createSpec,

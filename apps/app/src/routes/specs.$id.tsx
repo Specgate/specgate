@@ -9,13 +9,15 @@ import {
   Sparkles, FileText, Code2, ListChecks, Send, Eye, PlayCircle,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { users } from "@/lib/mock-data";
+import { users } from "@/lib/reference-data";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import type { Spec, SpecStatus } from "@/types/demo";
 import {
   addPreviewUrlForSpec,
   generateAgentContextForSpec,
+  linkImplementationBranchForSpec,
+  linkImplementationPullRequestForSpec,
   runSpecCodeCheckForSpec,
   syncSpecToGit,
 } from "@/lib/specgate-api";
@@ -27,7 +29,7 @@ export const Route = createFileRoute("/specs/$id")({
 
 function SpecDetail() {
   const { id } = Route.useParams();
-  const { state, updateSpec, setSpecStatus, addComment } = useDemoStore();
+  const { state, updateSpec, setSpecStatus, addComment, refresh } = useDemoStore();
   const navigate = useNavigate();
   const spec = state.specs.find((s) => s.id === id);
   const comments = state.comments.filter((c) => c.specId === id);
@@ -124,10 +126,10 @@ function SpecDetail() {
           <StatusActions
             spec={spec}
             syncToGit={syncToGit}
-            setStatus={(st) => {
-              void setSpecStatus(spec.id, st)
-                .then(() => toast.success("Status updated."))
-                .catch((error) => toast.error(error instanceof Error ? error.message : "Status update failed."));
+            refresh={refresh}
+            setStatus={async (st) => {
+              await setSpecStatus(spec.id, st);
+              toast.success("Status updated.");
             }}
             navigate={navigate}
           />
@@ -352,61 +354,99 @@ ${s.technicalNotes ? `## Technical Notes\n${s.technicalNotes}\n` : ""}`;
 }
 
 function StatusActions({
-  spec, syncToGit, setStatus, navigate,
+  spec, syncToGit, refresh, setStatus, navigate,
 }: {
   spec: Spec;
   syncToGit: () => Promise<void>;
-  setStatus: (s: SpecStatus) => void;
+  refresh: () => Promise<void>;
+  setStatus: (s: SpecStatus) => Promise<void>;
   navigate: ReturnType<typeof useNavigate>;
 }) {
+  async function createBranch() {
+    try {
+      toast.loading("Creating branch...", { id: "branch" });
+      if (spec.status === "build_queue") await setStatus("in_development");
+      const branchName = `feature/${spec.id.toLowerCase()}-${slugify(spec.title)}`;
+      await linkImplementationBranchForSpec(spec, branchName);
+      await refresh();
+      toast.dismiss("branch");
+      toast.success(`Branch linked: ${branchName}`);
+    } catch (error) {
+      toast.dismiss("branch");
+      toast.error(error instanceof Error ? error.message : "Could not link branch.");
+    }
+  }
+
+  async function linkPullRequest() {
+    try {
+      toast.loading("Linking pull request...", { id: "pull-request" });
+      const pullRequestUrl = `https://github.com/acme/launchos/pull/${spec.id.replace(/\D/g, "") || Date.now()}`;
+      await linkImplementationPullRequestForSpec(spec, pullRequestUrl);
+      await refresh();
+      toast.dismiss("pull-request");
+      toast.success("Pull request linked.");
+    } catch (error) {
+      toast.dismiss("pull-request");
+      toast.error(error instanceof Error ? error.message : "Could not link pull request.");
+    }
+  }
+
+  function transition(status: SpecStatus) {
+    void setStatus(status).catch((error) =>
+      toast.error(error instanceof Error ? error.message : "Status update failed."),
+    );
+  }
+
   const actions: Record<SpecStatus, { label: string; onClick: () => void; variant?: "default" | "outline" }[]> = {
     request: [
       { label: "Clarify with AI", onClick: () => toast.success("Clarifying questions generated."), variant: "outline" },
-      { label: "Create Draft Spec", onClick: () => setStatus("draft") },
+      { label: "Create Draft Spec", onClick: () => transition("draft") },
     ],
     draft: [
       { label: "Ask AI to Improve", onClick: () => toast.success("AI suggestions added."), variant: "outline" },
-      { label: "Move to Review", onClick: () => setStatus("review") },
+      { label: "Move to Review", onClick: () => transition("review") },
     ],
     review: [
-      { label: "Request Changes", onClick: () => setStatus("draft"), variant: "outline" },
-      { label: "Approve Spec", onClick: () => setStatus("approved") },
+      { label: "Request Changes", onClick: () => transition("draft"), variant: "outline" },
+      { label: "Approve Spec", onClick: () => transition("approved") },
     ],
     approved: [
       { label: "Sync to Git", onClick: syncToGit, variant: "outline" },
-      { label: "Add to Build Queue", onClick: () => setStatus("build_queue") },
+      { label: "Add to Build Queue", onClick: () => transition("build_queue") },
     ],
     build_queue: [
-      { label: "Create Branch", onClick: () => toast.success("Branch created."), variant: "outline" },
-      { label: "Start Development", onClick: () => setStatus("in_development") },
+      { label: "Create Branch", onClick: () => void createBranch(), variant: "outline" },
+      { label: "Start Development", onClick: () => transition("in_development") },
     ],
     in_development: [
-      { label: "Link PR", onClick: () => toast.success("PR linked."), variant: "outline" },
-      { label: "Move to Developer Review", onClick: () => setStatus("developer_review") },
+      { label: "Create Branch", onClick: () => void createBranch(), variant: "outline" },
+      { label: "Link PR", onClick: () => void linkPullRequest(), variant: "outline" },
+      { label: "Move to Developer Review", onClick: () => transition("developer_review") },
     ],
     developer_review: [
-      { label: "Request Code Changes", onClick: () => setStatus("in_development"), variant: "outline" },
-      { label: "Approve for Preview", onClick: () => setStatus("preview") },
+      { label: "Request Code Changes", onClick: () => transition("in_development"), variant: "outline" },
+      { label: "Approve for Preview", onClick: () => transition("preview") },
     ],
     preview: [
       {
         label: "Add Preview URL",
         onClick: () => {
           void addPreviewUrlForSpec(spec, `https://staging.launchos.dev/${spec.id.toLowerCase()}`)
+            .then(() => refresh())
             .then(() => toast.success("Preview URL saved."))
             .catch((error) => toast.error(error instanceof Error ? error.message : "Could not save preview URL."));
         },
         variant: "outline",
       },
-      { label: "Send to Stakeholder Review", onClick: () => setStatus("stakeholder_review") },
+      { label: "Send to Stakeholder Review", onClick: () => transition("stakeholder_review") },
     ],
     stakeholder_review: [
       { label: "Open Preview", onClick: () => navigate({ to: "/preview" }), variant: "outline" },
-      { label: "Approve", onClick: () => setStatus("accepted") },
+      { label: "Approve", onClick: () => transition("accepted") },
     ],
     accepted: [
       { label: "Generate Release Notes", onClick: () => toast.success("Release notes generated."), variant: "outline" },
-      { label: "Mark Done", onClick: () => setStatus("done") },
+      { label: "Mark Done", onClick: () => transition("done") },
     ],
     done: [],
   };
@@ -420,4 +460,12 @@ function StatusActions({
       ))}
     </div>
   );
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 40);
 }
