@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill, PriorityPill, UserAvatar } from "@/components/app/Pills";
 import { users } from "@/lib/reference-data";
 import { AlertTriangle, Bot, GitBranch, Sparkles } from "lucide-react";
-import type { SpecStatus } from "@/types/demo";
+import type { SpecStatus } from "@/types/specgate";
 
 export const Route = createFileRoute("/build-queue")({
   head: () => ({ meta: [{ title: "Build Queue — SpecPilot" }] }),
@@ -20,7 +20,7 @@ const cols: { key: string; title: string; statuses: SpecStatus[] }[] = [
 ];
 
 function BuildQueuePage() {
-  const { state } = useDemoStore();
+  const { state } = useSpecGateStore();
   return (
     <AppShell>
       <PageHeader title="Build Queue" description="Approved specs ready to build and implementation progress." />

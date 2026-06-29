@@ -186,6 +186,9 @@ importers:
       '@corely/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@corely/auth-client':
+        specifier: workspace:*
+        version: link:../../packages/auth-client
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -655,6 +658,10 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+    devDependencies:
+      '@corely/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
 
   packages/data:
     dependencies:
@@ -830,6 +837,9 @@ importers:
       '@corely/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@corely/kernel':
+        specifier: workspace:*
+        version: link:../../kernel
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

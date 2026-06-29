@@ -20,6 +20,8 @@
     "prisma:migrate": "pnpm --filter @corely/data exec prisma migrate dev",
     "prisma:studio": "pnpm --filter @corely/data exec prisma studio",
     "migrate": "pnpm --filter @corely/data exec tsx --env-file=../../.env ../../../node_modules/.bin/prisma migrate dev",
+    "seed:specgate": "tsx --env-file=.env packages/data/prisma/seed-specgate-demo.ts",
+    "seed:specgate:reset": "tsx --env-file=.env packages/data/prisma/seed-specgate-demo.ts --reset",
     "format": "prettier -w .",
     "format:check": "prettier --check .",
     "lint": "eslint . --cache",

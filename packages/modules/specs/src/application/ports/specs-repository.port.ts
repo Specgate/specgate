@@ -2,6 +2,7 @@ import type {
   CommentRecord,
   DecisionRecord,
   ProjectRecord,
+  SpecAssetRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../../domain/entities/spec";
@@ -68,6 +69,18 @@ export interface SpecsRepositoryPort {
 
   listDecisions(tenantId: string, specId: string): Promise<DecisionRecord[]>;
   createDecision(decision: DecisionRecord): Promise<void>;
+  listSpecAssets(tenantId: string, specId: string): Promise<SpecAssetRecord[]>;
+  findSpecAsset(
+    tenantId: string,
+    assetId: string,
+  ): Promise<SpecAssetRecord | null>;
+  createSpecAsset(asset: SpecAssetRecord): Promise<void>;
+  updateSpecAsset(
+    tenantId: string,
+    assetId: string,
+    patch: Partial<SpecAssetRecord>,
+  ): Promise<SpecAssetRecord | null>;
+  deleteSpecAsset(tenantId: string, assetId: string): Promise<void>;
 }
 
 export interface ActivityPublisherPort {

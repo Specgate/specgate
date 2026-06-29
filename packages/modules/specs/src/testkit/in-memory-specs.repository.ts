@@ -3,6 +3,7 @@ import type {
   CommentRecord,
   DecisionRecord,
   ProjectRecord,
+  SpecAssetRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../domain/entities/spec";
@@ -17,6 +18,7 @@ export class InMemorySpecsRepository implements SpecsRepositoryPort {
   versions = new Map<string, SpecVersionRecord>();
   comments = new Map<string, CommentRecord>();
   decisions = new Map<string, DecisionRecord>();
+  assets = new Map<string, SpecAssetRecord>();
 
   async listProjects(tenantId: string) {
     return [...this.projects.values()].filter(
@@ -149,5 +151,32 @@ export class InMemorySpecsRepository implements SpecsRepositoryPort {
   }
   async createDecision(decision: DecisionRecord) {
     this.decisions.set(decision.id, decision);
+  }
+  async listSpecAssets(tenantId: string, specId: string) {
+    return [...this.assets.values()].filter(
+      (asset) => asset.tenantId === tenantId && asset.specId === specId,
+    );
+  }
+  async findSpecAsset(tenantId: string, assetId: string) {
+    const asset = this.assets.get(assetId);
+    return asset?.tenantId === tenantId ? asset : null;
+  }
+  async createSpecAsset(asset: SpecAssetRecord) {
+    this.assets.set(asset.id, asset);
+  }
+  async updateSpecAsset(
+    tenantId: string,
+    assetId: string,
+    patch: Partial<SpecAssetRecord>,
+  ) {
+    const asset = await this.findSpecAsset(tenantId, assetId);
+    if (!asset) return null;
+    const updated = { ...asset, ...patch };
+    this.assets.set(assetId, updated);
+    return updated;
+  }
+  async deleteSpecAsset(tenantId: string, assetId: string) {
+    const asset = await this.findSpecAsset(tenantId, assetId);
+    if (asset) this.assets.delete(assetId);
   }
 }

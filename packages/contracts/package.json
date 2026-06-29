@@ -22,5 +22,8 @@
   "dependencies": {
     "zod": "catalog:"
   },
-  "author": "Ha Doan <ha@oneway8x.com>"
+  "author": "Ha Doan <ha@oneway8x.com>",
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*"
+  }
 }

@@ -28,6 +28,7 @@ model SpecGateSpec {
   title                  String
   slug                   String
   summary                String?
+  audience               String?
   description            String?
   status                 String
   priority               String
@@ -44,6 +45,7 @@ model SpecGateSpec {
   doneAt                 DateTime? @db.Timestamptz(6)
   acceptanceCriteriaJson Json?
   outOfScopeJson         Json?
+  openQuestionsJson      Json?
   relatedFilesJson       Json?
   technicalNotes         String?
   uiNotes                String?
@@ -55,6 +57,7 @@ model SpecGateSpec {
   versions  SpecGateSpecVersion[]
   comments  SpecGateComment[]
   decisions SpecGateDecision[]
+  assets    SpecGateSpecAsset[]
 
   @@unique([tenantId, projectId, specNumber])
   @@index([tenantId])
@@ -120,6 +123,31 @@ model SpecGateDecision {
   @@index([tenantId])
   @@index([tenantId, specId])
   @@map("specgate_decisions")
+}
+
+model SpecGateSpecAsset {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  specId          String
+  kind            String
+  fileName        String
+  contentType     String
+  sizeBytes       Int
+  storageProvider String
+  storageKey      String
+  altText         String?
+  caption         String?
+  createdBy       String
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  spec SpecGateSpec @relation(fields: [specId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@map("specgate_spec_assets")
 }
 
 model SpecGateMilestone {

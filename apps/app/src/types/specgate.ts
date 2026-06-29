@@ -20,7 +20,7 @@ export interface User {
   name: string;
   role: string;
   avatar: string;
-  type: "admin" | "stakeholder" | "developer";
+  type: "admin" | "stakeholder" | "developer" | "product_lead" | "unknown";
 }
 
 export interface Milestone {
@@ -41,12 +41,64 @@ export interface Comment {
   authorId: string;
   text: string;
   createdAt: string;
+  updatedAt?: string;
+  sectionReference?: string | null;
+  status: "open" | "resolved" | "dismissed";
   resolved?: boolean;
+  resolvedAt?: string | null;
+  resolvedBy?: string | null;
 }
 
 export interface Decision {
   id: string;
+  specId: string;
+  question: string;
   text: string;
+  decision: string;
+  decidedBy?: string;
+  createdAt?: string;
+}
+
+export interface SpecAsset {
+  id: string;
+  specId: string;
+  projectId: string;
+  kind: "image" | "file";
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  storageProvider: "gcp" | "vercel_blob" | "local";
+  storageKey: string;
+  url?: string | null;
+  publicUrl?: string | null;
+  signedUrl?: string | null;
+  altText?: string | null;
+  caption?: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface SpecCheck {
+  id: string;
+  specId: string;
+  status: "passed" | "warning" | "failed";
+  summary: string;
+  details?: string[];
+  createdAt: string;
+}
+
+export interface PreviewReview {
+  id: string;
+  specId: string;
+  previewUrl?: string | null;
+  status: string;
+  environment: string;
+  feedback?: string | null;
+  rejectionReason?: string | null;
+  reviewedBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Spec {
@@ -61,18 +113,21 @@ export interface Spec {
   ownerId: string;
   assigneeId?: string;
   summary: string;
+  audience?: string;
   problem?: string;
   expectedBehavior?: string;
   acceptanceCriteria: string[];
   outOfScope: string[];
-  openQuestions?: string[];
+  openQuestions: string[];
   technicalNotes?: string;
+  uiNotes?: string;
   decisions: Decision[];
   relatedFiles?: string[];
   previewUrl?: string;
   prUrl?: string;
   releaseNotes?: string;
   warning?: string;
+  latestSpecCheck?: SpecCheck | null;
   gitSyncedAt?: string;
   approvedAt?: string;
   updatedAt: string;
@@ -102,6 +157,10 @@ export interface DemoState {
   projects: Project[];
   specs: Spec[];
   comments: Comment[];
+  decisions: Decision[];
+  assets: SpecAsset[];
+  specChecks: SpecCheck[];
+  previewReviews: PreviewReview[];
   activities: Activity[];
   buildCycles: BuildCycle[];
   milestones: Milestone[];

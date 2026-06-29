@@ -7,9 +7,12 @@ import {
 } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { DemoStoreProvider } from "@/lib/demo-store";
+import { SpecGateStoreProvider } from "@/lib/specgate-store";
 
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { AuthProvider } from "@/components/auth/auth-provider";
+import { authClient } from "@/lib/auth/auth-client";
+import type { AuthContextType } from "@/components/auth/auth-context";
 
 function NotFoundComponent() {
   return (
@@ -99,10 +102,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <DemoStoreProvider>
-        <Outlet />
-        <Toaster theme="dark" position="bottom-right" richColors />
-      </DemoStoreProvider>
+      <AuthProvider authClient={authClient} onLogout={() => queryClient.clear()}>
+        <SpecGateStoreProvider>
+          <Outlet />
+          <Toaster theme="dark" position="bottom-right" richColors />
+        </SpecGateStoreProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CalendarRange, Sparkles, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/build-cycles")({
 });
 
 function BuildCyclesPage() {
-  const { state } = useDemoStore();
+  const { state } = useSpecGateStore();
   const [open, setOpen] = useState(false);
   const [summary, setSummary] = useState("");
 

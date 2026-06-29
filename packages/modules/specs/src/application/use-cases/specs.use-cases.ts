@@ -6,17 +6,19 @@ import type {
   DecisionDto,
   ProjectDto,
   ProjectInput,
+  SpecAssetDto,
   SpecDto,
   SpecInput,
   SpecListQuery,
   SpecUpdate,
   SpecStatus,
 } from "@corely/contracts/specgate";
+import type { ObjectStoragePort } from "@corely/kernel";
 import type {
   SpecsRepositoryPort,
   ActivityPublisherPort,
 } from "../ports/specs-repository.port";
-import type { SpecRecord } from "../../domain/entities/spec";
+import type { SpecAssetRecord, SpecRecord } from "../../domain/entities/spec";
 import {
   ConflictError,
   NotFoundError,
@@ -27,6 +29,7 @@ import {
   mapComment,
   mapDecision,
   mapProject,
+  mapSpecAsset,
   mapSpec,
 } from "../mappers";
 import { WorkflowService } from "../services/spec-workflow.service";
@@ -47,6 +50,7 @@ export class SpecsUseCases {
   constructor(
     private readonly repository: SpecsRepositoryPort,
     private readonly activity?: ActivityPublisherPort,
+    private readonly storage?: ObjectStoragePort,
   ) {}
 
   async listProjects(ctx: RequestContext): Promise<{ data: ProjectDto[] }> {
@@ -138,6 +142,7 @@ export class SpecsUseCases {
       title: input.title,
       slug: input.slug || slugify(input.title),
       summary: input.summary || null,
+      audience: input.audience || null,
       description: input.description || null,
       status: "request",
       priority: input.priority || "medium",
@@ -154,6 +159,7 @@ export class SpecsUseCases {
       doneAt: null,
       acceptanceCriteria: input.acceptanceCriteria || [],
       outOfScope: input.outOfScope || [],
+      openQuestions: input.openQuestions || [],
       relatedFiles: input.relatedFiles || [],
       technicalNotes: input.technicalNotes || null,
       uiNotes: input.uiNotes || null,
@@ -180,9 +186,11 @@ export class SpecsUseCases {
     const contentChanged = [
       "title",
       "summary",
+      "audience",
       "description",
       "acceptanceCriteria",
       "outOfScope",
+      "openQuestions",
       "relatedFiles",
       "technicalNotes",
       "uiNotes",
@@ -190,6 +198,8 @@ export class SpecsUseCases {
     const patch: Partial<SpecRecord> = {
       ...input,
       summary: input.summary === undefined ? undefined : input.summary || null,
+      audience:
+        input.audience === undefined ? undefined : input.audience || null,
       description:
         input.description === undefined ? undefined : input.description || null,
       targetMilestoneId:
@@ -500,6 +510,131 @@ export class SpecsUseCases {
     return { data: mapDecision(decision) };
   }
 
+  async listSpecAssets(
+    ctx: RequestContext,
+    specId: string,
+  ): Promise<{ data: SpecAssetDto[] }> {
+    await this.requireSpec(ctx.tenantId, specId);
+    const assets = await this.repository.listSpecAssets(ctx.tenantId, specId);
+    return {
+      data: await Promise.all(
+        assets.map((asset) => this.mapAssetWithUrls(ctx, asset)),
+      ),
+    };
+  }
+
+  async uploadSpecImage(
+    ctx: RequestContext,
+    specId: string,
+    input: {
+      fileName: string;
+      contentType: string;
+      sizeBytes: number;
+      bytes: Buffer;
+      altText?: string | null;
+      caption?: string | null;
+    },
+  ): Promise<{ data: { asset: SpecAssetDto } }> {
+    const spec = await this.requireSpec(ctx.tenantId, specId);
+    const storage = this.storage;
+    if (!storage) {
+      throw new ValidationError("Object storage is not configured.");
+    }
+
+    const allowedTypes = new Set([
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+      "image/gif",
+    ]);
+    if (!allowedTypes.has(input.contentType)) {
+      throw new ValidationError(
+        "Unsupported file type. Please upload PNG, JPG, WebP, or GIF.",
+      );
+    }
+    if (input.sizeBytes > 10 * 1024 * 1024) {
+      throw new ValidationError(
+        "Image is too large. Please upload an image under 10MB.",
+      );
+    }
+
+    const now = new Date();
+    const assetId = randomUUID();
+    const safeFileName =
+      input.fileName
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, "-")
+        .replace(/^-|-$/g, "") || "image";
+    const storageKey = `specgate/${ctx.tenantId}/${spec.projectId}/${spec.id}/images/${assetId}-${safeFileName}`;
+    await storage.putObject({
+      tenantId: ctx.tenantId,
+      objectKey: storageKey,
+      contentType: input.contentType,
+      bytes: input.bytes,
+    });
+
+    const provider = storage.provider();
+    const asset: SpecAssetRecord = {
+      id: assetId,
+      tenantId: ctx.tenantId,
+      projectId: spec.projectId,
+      specId: spec.id,
+      kind: "image",
+      fileName: input.fileName,
+      contentType: input.contentType,
+      sizeBytes: input.sizeBytes,
+      storageProvider:
+        provider === "gcs"
+          ? "gcp"
+          : provider === "vercel_blob"
+            ? "vercel_blob"
+            : "local",
+      storageKey,
+      altText: input.altText || null,
+      caption: input.caption || null,
+      createdBy: ctx.userId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await this.repository.createSpecAsset(asset);
+    await this.publish(
+      ctx,
+      spec,
+      "spec_updated",
+      `${ctx.userId} uploaded an image for ${spec.specNumber}.`,
+    );
+    return {
+      data: {
+        asset: await this.mapAssetWithUrls(ctx, asset),
+      },
+    };
+  }
+
+  async updateSpecAssetMetadata(
+    ctx: RequestContext,
+    assetId: string,
+    input: { altText?: string | null; caption?: string | null },
+  ): Promise<{ data: SpecAssetDto }> {
+    await this.requireAsset(ctx.tenantId, assetId);
+    const updated = await this.repository.updateSpecAsset(ctx.tenantId, assetId, {
+      altText: input.altText === undefined ? undefined : input.altText || null,
+      caption: input.caption === undefined ? undefined : input.caption || null,
+      updatedAt: new Date(),
+    });
+    if (!updated) throw new NotFoundError(`Asset ${assetId} not found.`);
+    return { data: await this.mapAssetWithUrls(ctx, updated) };
+  }
+
+  async deleteSpecAsset(
+    ctx: RequestContext,
+    assetId: string,
+  ): Promise<{ data: { deleted: true } }> {
+    await this.requireAsset(ctx.tenantId, assetId);
+    await this.repository.deleteSpecAsset(ctx.tenantId, assetId);
+    return { data: { deleted: true } };
+  }
+
   async getApprovedSpecSnapshot(
     ctx: RequestContext,
     specId: string,
@@ -591,6 +726,25 @@ export class SpecsUseCases {
     const comment = await this.repository.findComment(tenantId, commentId);
     if (!comment) throw new NotFoundError(`Comment ${commentId} not found.`);
     return comment;
+  }
+
+  private async requireAsset(tenantId: string, assetId: string) {
+    const asset = await this.repository.findSpecAsset(tenantId, assetId);
+    if (!asset) throw new NotFoundError(`Asset ${assetId} not found.`);
+    return asset;
+  }
+
+  private async mapAssetWithUrls(
+    ctx: RequestContext,
+    asset: SpecAssetRecord,
+  ): Promise<SpecAssetDto> {
+    if (!this.storage) return mapSpecAsset(asset);
+    const signedDownload = await this.storage.createSignedDownloadUrl({
+      tenantId: ctx.tenantId,
+      objectKey: asset.storageKey,
+      expiresInSeconds: 900,
+    });
+    return mapSpecAsset(asset, { signedUrl: signedDownload.url });
   }
 
   private async publish(

@@ -3,6 +3,7 @@ import type {
   CommentRecord,
   DecisionRecord,
   ProjectRecord,
+  SpecAssetRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../../domain/entities/spec";
@@ -25,6 +26,7 @@ type PrismaClientShape = {
   specGateSpecVersion: ModelClient;
   specGateComment: ModelClient;
   specGateDecision: ModelClient;
+  specGateSpecAsset: ModelClient;
 };
 
 const asStringArray = (value: unknown): string[] =>
@@ -144,6 +146,10 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       data.outOfScopeJson = patch.outOfScope;
       delete data.outOfScope;
     }
+    if ("openQuestions" in patch) {
+      data.openQuestionsJson = patch.openQuestions;
+      delete data.openQuestions;
+    }
     if ("relatedFiles" in patch) {
       data.relatedFilesJson = patch.relatedFiles;
       delete data.relatedFiles;
@@ -233,12 +239,52 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
     await this.prisma.specGateDecision.create({ data: decision });
   }
 
+  listSpecAssets(tenantId: string, specId: string): Promise<SpecAssetRecord[]> {
+    return this.prisma.specGateSpecAsset
+      .findMany({ where: { tenantId, specId }, orderBy: { createdAt: "asc" } })
+      .then((rows) => rows.map(this.mapSpecAsset));
+  }
+
+  findSpecAsset(
+    tenantId: string,
+    assetId: string,
+  ): Promise<SpecAssetRecord | null> {
+    return this.prisma.specGateSpecAsset
+      .findFirst({ where: { tenantId, id: assetId } })
+      .then((row) => (row ? this.mapSpecAsset(row) : null));
+  }
+
+  async createSpecAsset(asset: SpecAssetRecord): Promise<void> {
+    await this.prisma.specGateSpecAsset.create({ data: asset });
+  }
+
+  async updateSpecAsset(
+    tenantId: string,
+    assetId: string,
+    patch: Partial<SpecAssetRecord>,
+  ): Promise<SpecAssetRecord | null> {
+    const existing = await this.findSpecAsset(tenantId, assetId);
+    if (!existing) return null;
+    const row = await this.prisma.specGateSpecAsset.update({
+      where: { id: assetId },
+      data: patch,
+    });
+    return this.mapSpecAsset(row);
+  }
+
+  async deleteSpecAsset(tenantId: string, assetId: string): Promise<void> {
+    const existing = await this.findSpecAsset(tenantId, assetId);
+    if (!existing) return;
+    await (this.prisma.specGateSpecAsset as any).delete({ where: { id: assetId } });
+  }
+
   private toSpecData(spec: SpecRecord) {
-    const { acceptanceCriteria, outOfScope, relatedFiles, ...rest } = spec;
+    const { acceptanceCriteria, outOfScope, openQuestions, relatedFiles, ...rest } = spec;
     return {
       ...rest,
       acceptanceCriteriaJson: acceptanceCriteria,
       outOfScopeJson: outOfScope,
+      openQuestionsJson: openQuestions,
       relatedFilesJson: relatedFiles,
     };
   }
@@ -256,6 +302,7 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       title: row.title,
       slug: row.slug,
       summary: row.summary,
+      audience: row.audience,
       description: row.description,
       status: row.status,
       priority: row.priority,
@@ -272,6 +319,7 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       doneAt: row.doneAt,
       acceptanceCriteria: asStringArray(row.acceptanceCriteriaJson),
       outOfScope: asStringArray(row.outOfScopeJson),
+      openQuestions: asStringArray(row.openQuestionsJson),
       relatedFiles: asStringArray(row.relatedFilesJson),
       technicalNotes: row.technicalNotes,
       uiNotes: row.uiNotes,
@@ -286,6 +334,10 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
   }
 
   private mapDecision(row: any): DecisionRecord {
+    return row;
+  }
+
+  private mapSpecAsset(row: any): SpecAssetRecord {
     return row;
   }
 }

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill, PriorityPill } from "@/components/app/Pills";
 import { AlertTriangle, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/home")({
 });
 
 function HomePage() {
-  const { state } = useDemoStore();
+  const { state } = useSpecGateStore();
   const specs = state.specs;
   const stats = {
     total: specs.length,

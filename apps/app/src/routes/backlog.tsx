@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill, PriorityPill, UserAvatar } from "@/components/app/Pills";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMemo, useState } from "react";
 import { users } from "@/lib/reference-data";
-import type { SpecStatus } from "@/types/demo";
+import type { SpecStatus } from "@/types/specgate";
 import { Search, Plus, AlertTriangle } from "lucide-react";
 import { NewRequestModal } from "@/components/shared/NewRequestModal";
 
@@ -25,7 +25,7 @@ const filters: Record<string, SpecStatus[] | null> = {
 };
 
 function BacklogPage() {
-  const { state } = useDemoStore();
+  const { state } = useSpecGateStore();
   const [tab, setTab] = useState("All");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);

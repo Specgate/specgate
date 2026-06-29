@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import type { SpecStatus, Priority } from "@/types/demo";
-import { useDemoStore } from "@/lib/demo-store";
+import type { SpecStatus, Priority } from "@/types/specgate";
+import { useSpecGateStore } from "@/lib/specgate-store";
 
 const teamLabels: Record<SpecStatus, string> = {
   request: "Request",
@@ -45,7 +45,7 @@ const colors: Record<SpecStatus, string> = {
 };
 
 export function StatusPill({ status, className }: { status: SpecStatus; className?: string }) {
-  const { state } = useDemoStore();
+  const { state } = useSpecGateStore();
   const label = state.mode === "solo" ? soloLabels[status] : teamLabels[status];
   return (
     <span

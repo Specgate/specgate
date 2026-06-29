@@ -41,6 +41,7 @@ export const SpecSchema = z.object({
   title: z.string(),
   slug: z.string(),
   summary: z.string().nullable(),
+  audience: z.string().nullable(),
   description: z.string().nullable(),
   status: SpecStatusSchema,
   priority: SpecPrioritySchema,
@@ -57,6 +58,7 @@ export const SpecSchema = z.object({
   doneAt: IsoDateSchema.nullable(),
   acceptanceCriteria: z.array(z.string()),
   outOfScope: z.array(z.string()),
+  openQuestions: z.array(z.string()),
   relatedFiles: z.array(z.string()),
   technicalNotes: z.string().nullable(),
   uiNotes: z.string().nullable(),
@@ -73,12 +75,14 @@ export const ApprovedSpecSnapshotSchema = SpecSchema.pick({
   specNumber: true,
   title: true,
   summary: true,
+  audience: true,
   description: true,
   status: true,
   priority: true,
   roadmapLane: true,
   acceptanceCriteria: true,
   outOfScope: true,
+  openQuestions: true,
   relatedFiles: true,
   technicalNotes: true,
   uiNotes: true,
@@ -125,6 +129,27 @@ export const DecisionSchema = z.object({
   createdAt: IsoDateSchema,
 });
 export type DecisionDto = z.infer<typeof DecisionSchema>;
+
+export const SpecAssetSchema = z.object({
+  id: IdSchema,
+  tenantId: z.string(),
+  projectId: z.string(),
+  specId: z.string(),
+  kind: z.enum(["image", "file"]),
+  fileName: z.string(),
+  contentType: z.string(),
+  sizeBytes: z.number().int().nonnegative(),
+  storageProvider: z.enum(["gcp", "vercel_blob", "local"]),
+  storageKey: z.string(),
+  publicUrl: z.string().nullable().optional(),
+  signedUrl: z.string().nullable().optional(),
+  altText: z.string().nullable(),
+  caption: z.string().nullable(),
+  createdBy: z.string(),
+  createdAt: IsoDateSchema,
+  updatedAt: IsoDateSchema,
+});
+export type SpecAssetDto = z.infer<typeof SpecAssetSchema>;
 
 export const MilestoneSchema = z.object({
   id: IdSchema,
@@ -285,6 +310,7 @@ export const SpecInputSchema = z.object({
   title: z.string().min(1),
   slug: z.string().optional(),
   summary: z.string().optional().nullable(),
+  audience: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   priority: SpecPrioritySchema.default("medium"),
   roadmapLane: RoadmapLaneSchema.default("icebox"),
@@ -293,6 +319,7 @@ export const SpecInputSchema = z.object({
   assigneeId: z.string().optional().nullable(),
   acceptanceCriteria: z.array(z.string()).optional(),
   outOfScope: z.array(z.string()).optional(),
+  openQuestions: z.array(z.string()).optional(),
   relatedFiles: z.array(z.string()).optional(),
   technicalNotes: z.string().optional().nullable(),
   uiNotes: z.string().optional().nullable(),
@@ -380,4 +407,8 @@ export const PreviewCommentInputSchema = z.object({
 });
 export const PreviewRejectInputSchema = z.object({
   reason: z.string().min(1),
+});
+export const SpecAssetMetadataInputSchema = z.object({
+  altText: z.string().max(500).optional().nullable(),
+  caption: z.string().max(1000).optional().nullable(),
 });

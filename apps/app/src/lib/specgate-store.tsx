@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { DemoState, Spec, SpecStatus, Comment, Activity, DemoMode, RoadmapLane } from "@/types/demo";
+import type { DemoState, Spec, SpecStatus, Comment, Activity, DemoMode, RoadmapLane } from "@/types/specgate";
 import { initialState } from "./reference-data";
 import {
   addSpecComment,
@@ -14,7 +14,7 @@ import {
 const STORAGE_KEY = "specpilot-demo-state";
 const MODE_STORAGE_KEY = "specpilot-mode";
 
-interface DemoStoreContext {
+interface SpecGateStoreContext {
   state: DemoState;
   loading: boolean;
   error: string | null;
@@ -30,7 +30,7 @@ interface DemoStoreContext {
   reset: () => Promise<void>;
 }
 
-const Ctx = createContext<DemoStoreContext | null>(null);
+const Ctx = createContext<SpecGateStoreContext | null>(null);
 
 function loadMode(): DemoMode {
   try {
@@ -40,7 +40,7 @@ function loadMode(): DemoMode {
   return initialState.mode;
 }
 
-export function DemoStoreProvider({ children }: { children: ReactNode }) {
+export function SpecGateStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(initialState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     return spec;
   }
 
-  const value: DemoStoreContext = {
+  const value: SpecGateStoreContext = {
     state,
     loading,
     error,
@@ -111,7 +111,7 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
     },
     addComment: async (c) => {
       const spec = findSpec(c.specId);
-      await addSpecComment(spec, c.text);
+      await addSpecComment(spec, c.text, c.sectionReference ?? null);
       await refresh();
     },
     addActivity: (a) => setState((s) => ({ ...s, activities: [a, ...s.activities] })),
@@ -125,9 +125,9 @@ export function DemoStoreProvider({ children }: { children: ReactNode }) {
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-export function useDemoStore() {
+export function useSpecGateStore() {
   const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("useDemoStore must be inside DemoStoreProvider");
+  if (!ctx) throw new Error("useSpecGateStore must be inside SpecGateStoreProvider");
   return ctx;
 }
 

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { reset } = useDemoStore();
+  const { reset } = useSpecGateStore();
   const [resetOpen, setResetOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");

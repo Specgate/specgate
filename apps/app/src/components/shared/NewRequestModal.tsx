@@ -18,13 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDemoStore, nextRequestId } from "@/lib/demo-store";
+import { useSpecGateStore, nextRequestId } from "@/lib/specgate-store";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
-import type { Priority, RoadmapLane } from "@/types/demo";
+import type { Priority, RoadmapLane } from "@/types/specgate";
 
 export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
-  const { state, addSpec } = useDemoStore();
+  const { state, addSpec } = useSpecGateStore();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [why, setWhy] = useState("");

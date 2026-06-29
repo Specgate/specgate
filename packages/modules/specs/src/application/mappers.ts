@@ -3,6 +3,7 @@ import type {
   CommentDto,
   DecisionDto,
   ProjectDto,
+  SpecAssetDto,
   SpecDto,
   SpecVersionDto,
 } from "@corely/contracts/specgate";
@@ -10,6 +11,7 @@ import type {
   CommentRecord,
   DecisionRecord,
   ProjectRecord,
+  SpecAssetRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../domain/entities/spec";
@@ -45,12 +47,14 @@ export function mapApprovedSnapshot(row: SpecRecord): ApprovedSpecSnapshot {
     specNumber: dto.specNumber,
     title: dto.title,
     summary: dto.summary,
+    audience: dto.audience,
     description: dto.description,
     status: dto.status,
     priority: dto.priority,
     roadmapLane: dto.roadmapLane,
     acceptanceCriteria: dto.acceptanceCriteria,
     outOfScope: dto.outOfScope,
+    openQuestions: dto.openQuestions,
     relatedFiles: dto.relatedFiles,
     technicalNotes: dto.technicalNotes,
     uiNotes: dto.uiNotes,
@@ -74,4 +78,17 @@ export function mapComment(row: CommentRecord): CommentDto {
 
 export function mapDecision(row: DecisionRecord): DecisionDto {
   return { ...row, createdAt: row.createdAt.toISOString() };
+}
+
+export function mapSpecAsset(
+  row: SpecAssetRecord,
+  urls?: { publicUrl?: string | null; signedUrl?: string | null },
+): SpecAssetDto {
+  return {
+    ...row,
+    publicUrl: urls?.publicUrl ?? null,
+    signedUrl: urls?.signedUrl ?? null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
 }

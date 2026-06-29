@@ -10,7 +10,9 @@
     "exactOptionalPropertyTypes": false,
     "baseUrl": ".",
     "paths": {
-      "@corely/contracts/specgate": ["../../contracts/src/specgate/index.ts"]
+      "@corely/contracts/specgate": ["../../contracts/src/specgate/index.ts"],
+      "@corely/kernel": ["../../kernel/src/index.ts"],
+      "@corely/kernel/*": ["../../kernel/src/*"]
     }
   },
   "include": ["src"]

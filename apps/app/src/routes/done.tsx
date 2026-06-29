@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill } from "@/components/app/Pills";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, GitPullRequest, Rocket, Sparkles } from "lucide-react";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/done")({
 });
 
 function DonePage() {
-  const { state } = useDemoStore();
+  const { state } = useSpecGateStore();
   const done = state.specs.filter((s) => s.status === "done" || s.status === "accepted");
   const [open, setOpen] = useState(false);
 

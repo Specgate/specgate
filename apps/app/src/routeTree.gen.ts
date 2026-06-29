@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as PreviewRouteImport } from './routes/preview'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DoneRouteImport } from './routes/done'
 import { Route as BuildQueueRouteImport } from './routes/build-queue'
 import { Route as BuildCyclesRouteImport } from './routes/build-cycles'
@@ -35,9 +37,19 @@ const PreviewRoute = PreviewRouteImport.update({
   path: '/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DoneRoute = DoneRouteImport.update({
@@ -76,8 +88,10 @@ export interface FileRoutesByFullPath {
   '/backlog': typeof BacklogRoute
   '/build-cycles': typeof BuildCyclesRoute
   '/build-queue': typeof BuildQueueRoute
+  '/dashboard': typeof DashboardRoute
   '/done': typeof DoneRoute
   '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
   '/preview': typeof PreviewRoute
   '/roadmap': typeof RoadmapRoute
   '/settings': typeof SettingsRoute
@@ -88,8 +102,10 @@ export interface FileRoutesByTo {
   '/backlog': typeof BacklogRoute
   '/build-cycles': typeof BuildCyclesRoute
   '/build-queue': typeof BuildQueueRoute
+  '/dashboard': typeof DashboardRoute
   '/done': typeof DoneRoute
   '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
   '/preview': typeof PreviewRoute
   '/roadmap': typeof RoadmapRoute
   '/settings': typeof SettingsRoute
@@ -101,8 +117,10 @@ export interface FileRoutesById {
   '/backlog': typeof BacklogRoute
   '/build-cycles': typeof BuildCyclesRoute
   '/build-queue': typeof BuildQueueRoute
+  '/dashboard': typeof DashboardRoute
   '/done': typeof DoneRoute
   '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
   '/preview': typeof PreviewRoute
   '/roadmap': typeof RoadmapRoute
   '/settings': typeof SettingsRoute
@@ -115,8 +133,10 @@ export interface FileRouteTypes {
     | '/backlog'
     | '/build-cycles'
     | '/build-queue'
+    | '/dashboard'
     | '/done'
     | '/home'
+    | '/login'
     | '/preview'
     | '/roadmap'
     | '/settings'
@@ -127,8 +147,10 @@ export interface FileRouteTypes {
     | '/backlog'
     | '/build-cycles'
     | '/build-queue'
+    | '/dashboard'
     | '/done'
     | '/home'
+    | '/login'
     | '/preview'
     | '/roadmap'
     | '/settings'
@@ -139,8 +161,10 @@ export interface FileRouteTypes {
     | '/backlog'
     | '/build-cycles'
     | '/build-queue'
+    | '/dashboard'
     | '/done'
     | '/home'
+    | '/login'
     | '/preview'
     | '/roadmap'
     | '/settings'
@@ -152,8 +176,10 @@ export interface RootRouteChildren {
   BacklogRoute: typeof BacklogRoute
   BuildCyclesRoute: typeof BuildCyclesRoute
   BuildQueueRoute: typeof BuildQueueRoute
+  DashboardRoute: typeof DashboardRoute
   DoneRoute: typeof DoneRoute
   HomeRoute: typeof HomeRoute
+  LoginRoute: typeof LoginRoute
   PreviewRoute: typeof PreviewRoute
   RoadmapRoute: typeof RoadmapRoute
   SettingsRoute: typeof SettingsRoute
@@ -183,11 +209,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/done': {
@@ -240,8 +280,10 @@ const rootRouteChildren: RootRouteChildren = {
   BacklogRoute: BacklogRoute,
   BuildCyclesRoute: BuildCyclesRoute,
   BuildQueueRoute: BuildQueueRoute,
+  DashboardRoute: DashboardRoute,
   DoneRoute: DoneRoute,
   HomeRoute: HomeRoute,
+  LoginRoute: LoginRoute,
   PreviewRoute: PreviewRoute,
   RoadmapRoute: RoadmapRoute,
   SettingsRoute: SettingsRoute,

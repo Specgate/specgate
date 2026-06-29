@@ -8,6 +8,7 @@ export type SpecRecord = {
   title: string;
   slug: string;
   summary: string | null;
+  audience: string | null;
   description: string | null;
   status: SpecStatus;
   priority: SpecPriority;
@@ -24,6 +25,7 @@ export type SpecRecord = {
   doneAt: Date | null;
   acceptanceCriteria: string[];
   outOfScope: string[];
+  openQuestions: string[];
   relatedFiles: string[];
   technicalNotes: string | null;
   uiNotes: string | null;
@@ -82,4 +84,22 @@ export type DecisionRecord = {
   decision: string;
   decidedBy: string;
   createdAt: Date;
+};
+
+export type SpecAssetRecord = {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  specId: string;
+  kind: "image" | "file";
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  storageProvider: "gcp" | "vercel_blob" | "local";
+  storageKey: string;
+  altText: string | null;
+  caption: string | null;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 };

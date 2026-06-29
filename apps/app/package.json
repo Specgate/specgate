@@ -37,6 +37,7 @@
     "@vercel/blob": "catalog:",
     "@vercel/functions": "catalog:",
     "@corely/api-client": "workspace:*",
+    "@corely/auth-client": "workspace:*",
     "@corely/contracts": "workspace:*",
     "@corely/kernel": "workspace:*",
     "@corely/modules-activity": "workspace:*",

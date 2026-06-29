@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill, PriorityPill } from "@/components/app/Pills";
 import { Button } from "@/components/ui/button";
 import { Sparkles, AlertTriangle, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { RoadmapLane } from "@/types/demo";
+import type { RoadmapLane } from "@/types/specgate";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/roadmap")({
 });
 
 function RoadmapPage() {
-  const { state, setSpecLane } = useDemoStore();
+  const { state, setSpecLane } = useSpecGateStore();
   const [open, setOpen] = useState(false);
   const [suggestion, setSuggestion] = useState<string>("");
 

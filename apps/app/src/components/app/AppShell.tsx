@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { toast } from "sonner";
 import { NewRequestModal } from "@/components/shared/NewRequestModal";
 
@@ -41,7 +41,7 @@ const nav = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { state, loading, error, refresh, setMode, setProject } = useDemoStore();
+  const { state, loading, error, refresh, setMode, setProject } = useSpecGateStore();
   const [newOpen, setNewOpen] = useState(false);
   const navigate = useNavigate();
   const projects = state.projects;

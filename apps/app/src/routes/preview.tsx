@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
-import { useDemoStore } from "@/lib/demo-store";
+import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill } from "@/components/app/Pills";
 import { Button } from "@/components/ui/button";
 import { Eye, ExternalLink, CheckCircle2, MessageSquare, X, AlertTriangle, Send, Globe } from "lucide-react";
@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import type { Spec } from "@/types/demo";
+import type { Spec } from "@/types/specgate";
 import { commentOnPreview, rejectPreview } from "@/lib/specgate-api";
+import { getUserDisplay } from "@/lib/reference-data";
 
 export const Route = createFileRoute("/preview")({
   head: () => ({ meta: [{ title: "Preview — SpecPilot" }] }),
@@ -24,8 +25,16 @@ export const Route = createFileRoute("/preview")({
 });
 
 function PreviewPage() {
-  const { state, refresh, setSpecStatus } = useDemoStore();
-  const items = state.specs.filter((s) => ["stakeholder_review", "preview", "accepted"].includes(s.status) || s.previewUrl);
+  const { state, refresh, setSpecStatus } = useSpecGateStore();
+  const filterSpecId =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("specId")
+      : null;
+  const items = state.specs.filter(
+    (s) =>
+      (!filterSpecId || s.id === filterSpecId) &&
+      (["stakeholder_review", "preview", "accepted"].includes(s.status) || s.previewUrl),
+  );
   const [open, setOpen] = useState<Spec | null>(null);
   const [reject, setReject] = useState<Spec | null>(null);
 
@@ -55,6 +64,19 @@ function PreviewPage() {
                   <Globe className="h-3.5 w-3.5" /> {s.previewUrl}
                 </div>
               )}
+              {(() => {
+                const review = state.previewReviews
+                  .filter((item) => item.specId === s.id)
+                  .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+                const reviewer = getUserDisplay(review?.reviewedBy);
+                if (!review) return null;
+                return (
+                  <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                    <div>Status: {review.status}</div>
+                    {reviewer && <div>Reviewer: {reviewer.name}</div>}
+                  </div>
+                );
+              })()}
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button size="sm" onClick={() => setOpen(s)} className="gap-1.5"><Eye className="h-3.5 w-3.5" /> Open Preview</Button>
                 {s.status === "stakeholder_review" && (

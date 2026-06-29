@@ -9,8 +9,9 @@ import type {
   ImplementationRecordDto,
   MilestoneDto,
   PreviewReviewDto,
-  SpecCodeCheckDto,
   ProjectDto,
+  SpecAssetDto,
+  SpecCodeCheckDto,
   SpecDto,
   SpecInput,
   SpecUpdate,
@@ -19,30 +20,56 @@ import type {
   Activity,
   BuildCycle,
   Comment,
+  Decision,
   DemoState,
   Milestone,
+  PreviewReview,
   Project,
   RoadmapLane,
   Spec,
-} from "@/types/demo";
-import { users } from "./reference-data";
+  SpecAsset,
+  SpecCheck,
+} from "@/types/specgate";
+import { getUserDisplay } from "./reference-data";
 
 type ApiEnvelope<T> = { data: T };
 
 const API_HEADERS = {
-  "content-type": "application/json",
   "x-tenant-id": "tenant_demo",
   "x-user-id": "u-ha",
 };
 
+function buildHeaders(init: RequestInit = {}) {
+  const headers = new Headers(init.headers ?? {});
+  for (const [key, value] of Object.entries(API_HEADERS)) {
+    if (!headers.has(key)) headers.set(key, value);
+  }
+  if (!(init.body instanceof FormData) && !headers.has("content-type")) {
+    headers.set("content-type", "application/json");
+  }
+  return headers;
+}
+
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const response = await fetch(`/api/specgate${path}`, {
     ...init,
-    headers: {
-      ...API_HEADERS,
-      ...(init.headers ?? {}),
-    },
+    headers: buildHeaders(init),
   });
+  const body = await response.json().catch(() => null);
+  if (!response.ok) {
+    const detail =
+      body?.error?.message ?? body?.detail ?? body?.title ?? response.statusText;
+    throw new Error(detail);
+  }
+  return body as T;
+}
+
+async function apiOrNull<T>(path: string, init: RequestInit = {}): Promise<T | null> {
+  const response = await fetch(`/api/specgate${path}`, {
+    ...init,
+    headers: buildHeaders(init),
+  });
+  if (response.status === 404) return null;
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     const detail =
@@ -55,11 +82,10 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
 const laneToUi = (lane: string): RoadmapLane =>
   lane === "now" ? "Now" : lane === "next" ? "Next" : lane === "later" ? "Later" : "Icebox";
 
-export const laneToApi = (lane: RoadmapLane) => lane.toLowerCase() as "now" | "next" | "later" | "icebox";
+export const laneToApi = (lane: RoadmapLane) =>
+  lane.toLowerCase() as "now" | "next" | "later" | "icebox";
 
 const dateOnly = (value?: string | null) => (value ? value.slice(0, 10) : "");
-
-const userName = (id?: string | null) => users.find((u) => u.id === id)?.name ?? id ?? "Someone";
 
 function mapProject(project: ProjectDto): Project {
   return {
@@ -69,16 +95,87 @@ function mapProject(project: ProjectDto): Project {
   };
 }
 
+function mapSpecAsset(asset: SpecAssetDto): SpecAsset {
+  return {
+    id: asset.id,
+    specId: asset.specId,
+    projectId: asset.projectId,
+    kind: asset.kind,
+    fileName: asset.fileName,
+    contentType: asset.contentType,
+    sizeBytes: asset.sizeBytes,
+    storageProvider: asset.storageProvider,
+    storageKey: asset.storageKey,
+    url: asset.signedUrl ?? asset.publicUrl ?? null,
+    publicUrl: asset.publicUrl ?? null,
+    signedUrl: asset.signedUrl ?? null,
+    altText: asset.altText ?? null,
+    caption: asset.caption ?? null,
+    createdBy: asset.createdBy,
+    createdAt: asset.createdAt,
+    updatedAt: asset.updatedAt,
+  };
+}
+
+function mapDecision(decision: DecisionDto, specNumberByApiId: Map<string, string>): Decision {
+  return {
+    id: decision.id,
+    specId: specNumberByApiId.get(decision.specId) ?? decision.specId,
+    question: decision.question,
+    text: `${decision.question}: ${decision.decision}`,
+    decision: decision.decision,
+    decidedBy: decision.decidedBy,
+    createdAt: decision.createdAt,
+  };
+}
+
+function normalizeSpecCheckStatus(status: string): SpecCheck["status"] {
+  const value = status.toLowerCase();
+  if (value.includes("pass")) return "passed";
+  if (value.includes("warning") || value.includes("mismatch")) return "warning";
+  return "failed";
+}
+
+function mapSpecCheck(dto: SpecCodeCheckDto, specNumberByApiId: Map<string, string>): SpecCheck {
+  return {
+    id: dto.id,
+    specId: specNumberByApiId.get(dto.specId) ?? dto.specId,
+    status: normalizeSpecCheckStatus(dto.status),
+    summary: dto.summary,
+    details: dto.mismatchFindings.map((finding) =>
+      `${finding.severity}: ${finding.message}${finding.file ? ` (${finding.file})` : ""}`,
+    ),
+    createdAt: dto.createdAt,
+  };
+}
+
+function mapPreviewReview(review: PreviewReviewDto, specNumberByApiId: Map<string, string>): PreviewReview {
+  return {
+    id: review.id,
+    specId: specNumberByApiId.get(review.specId) ?? review.specId,
+    previewUrl: review.previewUrl ?? null,
+    status: review.status,
+    environment: review.environment,
+    feedback: review.feedback ?? null,
+    rejectionReason: review.rejectionReason ?? null,
+    reviewedBy: review.reviewedBy ?? null,
+    createdAt: review.createdAt,
+    updatedAt: review.updatedAt,
+  };
+}
+
 function mapSpec(
   spec: SpecDto,
   options: {
     queueBySpecId: Map<string, BuildQueueItemDto>;
     latestPreviewBySpecId: Map<string, PreviewReviewDto>;
     decisionsBySpecId: Map<string, DecisionDto[]>;
+    latestSpecCheckBySpecId: Map<string, SpecCheck>;
   },
 ): Spec {
   const queueItem = options.queueBySpecId.get(spec.id);
   const preview = options.latestPreviewBySpecId.get(spec.id);
+  const latestSpecCheck = options.latestSpecCheckBySpecId.get(spec.id) ?? null;
   const decisions = options.decisionsBySpecId.get(spec.id) ?? [];
 
   return {
@@ -92,18 +189,23 @@ function mapSpec(
     milestoneId: spec.targetMilestoneId ?? "",
     ownerId: spec.ownerId ?? spec.createdBy,
     assigneeId: spec.assigneeId ?? queueItem?.assignedTo ?? undefined,
-    summary: spec.summary ?? spec.description ?? "",
-    problem: spec.description ?? undefined,
-    expectedBehavior: spec.uiNotes ?? undefined,
+    summary: spec.summary ?? "",
+    audience: spec.audience ?? undefined,
+    problem: spec.description ?? spec.summary ?? undefined,
+    expectedBehavior: spec.description ?? spec.summary ?? undefined,
     acceptanceCriteria: spec.acceptanceCriteria,
     outOfScope: spec.outOfScope,
+    openQuestions: spec.openQuestions ?? [],
     technicalNotes: spec.technicalNotes ?? undefined,
-    decisions: decisions.map((decision) => ({
-      id: decision.id,
-      text: `${decision.question}: ${decision.decision}`,
-    })),
+    uiNotes: spec.uiNotes ?? undefined,
+    decisions: decisions.map((decision) => mapDecision(decision, new Map([[spec.id, spec.specNumber]]))),
     relatedFiles: spec.relatedFiles,
     previewUrl: preview?.previewUrl ?? undefined,
+    warning:
+      latestSpecCheck && latestSpecCheck.status !== "passed"
+        ? latestSpecCheck.summary
+        : undefined,
+    latestSpecCheck,
     approvedAt: dateOnly(spec.approvedAt) || undefined,
     updatedAt: dateOnly(spec.updatedAt),
     buildCycleId: queueItem?.buildCycleId ?? spec.buildCycleId ?? undefined,
@@ -116,8 +218,13 @@ function mapComment(comment: CommentDto, specNumberByApiId: Map<string, string>)
     specId: specNumberByApiId.get(comment.specId) ?? comment.specId,
     authorId: comment.userId,
     text: comment.body,
-    createdAt: dateOnly(comment.createdAt),
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt,
+    sectionReference: comment.sectionReference ?? null,
+    status: comment.status,
     resolved: comment.status === "resolved",
+    resolvedAt: comment.resolvedAt ?? null,
+    resolvedBy: comment.resolvedBy ?? null,
   };
 }
 
@@ -170,6 +277,10 @@ export function apiIdForSpec(spec: Spec): string {
   return spec.apiId ?? spec.id;
 }
 
+export function getUserName(userId?: string | null) {
+  return getUserDisplay(userId)?.name ?? userId ?? "Someone";
+}
+
 export async function resetAndSeedDemo() {
   await api<ApiEnvelope<{ reset: true }>>("/demo/reset", { method: "POST" });
   await api<ApiEnvelope<{ seeded: true; projectId: string }>>("/demo/seed", { method: "POST" });
@@ -204,7 +315,7 @@ export async function loadWorkspaceState(options: {
   const queueBySpecId = new Map(queue.map((item) => [item.specId, item]));
   const previewsBySpecId = latestPreviewBySpec(reviews);
 
-  const [commentsBySpec, decisionsBySpec] = await Promise.all([
+  const [commentsBySpec, decisionsBySpec, assetsBySpec, specChecksBySpec] = await Promise.all([
     Promise.all(
       specs.map(async (spec) => [
         spec.id,
@@ -217,9 +328,28 @@ export async function loadWorkspaceState(options: {
         await api<ApiEnvelope<DecisionDto[]>>(`/specs/${spec.id}/decisions`).then((r) => r.data),
       ] as const),
     ),
+    Promise.all(
+      specs.map(async (spec) => [
+        spec.id,
+        await api<ApiEnvelope<SpecAssetDto[]>>(`/specs/${spec.id}/assets`).then((r) => r.data),
+      ] as const),
+    ),
+    Promise.all(
+      specs.map(async (spec) => [
+        spec.id,
+        await apiOrNull<ApiEnvelope<SpecCodeCheckDto>>(`/agent/specs/${spec.id}/spec-checks/latest`).then(
+          (r) => (r ? r.data : null),
+        ),
+      ] as const),
+    ),
   ]);
 
   const decisionsBySpecId = new Map(decisionsBySpec);
+  const latestSpecCheckBySpecId = new Map(
+    specChecksBySpec
+      .filter(([, dto]) => dto)
+      .map(([specId, dto]) => [specId, mapSpecCheck(dto as SpecCodeCheckDto, specNumberByApiId)]),
+  );
 
   return {
     mode: options.mode,
@@ -230,11 +360,18 @@ export async function loadWorkspaceState(options: {
         queueBySpecId,
         latestPreviewBySpecId: previewsBySpecId,
         decisionsBySpecId,
+        latestSpecCheckBySpecId,
       }),
     ),
     comments: commentsBySpec.flatMap(([, comments]) =>
       comments.map((comment) => mapComment(comment, specNumberByApiId)),
     ),
+    decisions: decisionsBySpec.flatMap(([, decisions]) =>
+      decisions.map((decision) => mapDecision(decision, specNumberByApiId)),
+    ),
+    assets: assetsBySpec.flatMap(([, assets]) => assets.map(mapSpecAsset)),
+    specChecks: Array.from(latestSpecCheckBySpecId.values()),
+    previewReviews: reviews.map((review) => mapPreviewReview(review, specNumberByApiId)),
     activities: activities.map((activity) => mapActivity(activity, specNumberByApiId)),
     buildCycles: buildCycles.map((cycle) => mapBuildCycle(cycle, queue, specNumberByApiId)),
     milestones: milestones.map(mapMilestone),
@@ -245,7 +382,8 @@ function toSpecUpdate(patch: Partial<Spec>): SpecUpdate {
   return {
     title: patch.title,
     summary: patch.summary,
-    description: patch.problem,
+    audience: patch.audience,
+    description: patch.expectedBehavior ?? patch.problem,
     priority: patch.priority,
     roadmapLane: patch.roadmapLane ? laneToApi(patch.roadmapLane) : undefined,
     targetMilestoneId: patch.milestoneId,
@@ -253,9 +391,10 @@ function toSpecUpdate(patch: Partial<Spec>): SpecUpdate {
     assigneeId: patch.assigneeId,
     acceptanceCriteria: patch.acceptanceCriteria,
     outOfScope: patch.outOfScope,
+    openQuestions: patch.openQuestions,
     relatedFiles: patch.relatedFiles,
     technicalNotes: patch.technicalNotes,
-    uiNotes: patch.expectedBehavior,
+    uiNotes: patch.uiNotes,
   };
 }
 
@@ -264,7 +403,8 @@ export async function createSpec(projectId: string, spec: Spec) {
     projectId,
     title: spec.title,
     summary: spec.summary,
-    description: spec.problem,
+    audience: spec.audience ?? null,
+    description: spec.expectedBehavior ?? spec.problem,
     priority: spec.priority,
     roadmapLane: laneToApi(spec.roadmapLane),
     targetMilestoneId: spec.milestoneId || null,
@@ -272,9 +412,10 @@ export async function createSpec(projectId: string, spec: Spec) {
     assigneeId: spec.assigneeId || null,
     acceptanceCriteria: spec.acceptanceCriteria,
     outOfScope: spec.outOfScope,
+    openQuestions: spec.openQuestions,
     relatedFiles: spec.relatedFiles ?? [],
     technicalNotes: spec.technicalNotes ?? null,
-    uiNotes: spec.expectedBehavior ?? null,
+    uiNotes: spec.uiNotes ?? null,
   };
   return api<ApiEnvelope<SpecDto>>("/specs", {
     method: "POST",
@@ -296,10 +437,25 @@ export async function moveSpecLane(spec: Spec, lane: RoadmapLane) {
   });
 }
 
-export async function addSpecComment(spec: Spec, body: string) {
+export async function addSpecComment(spec: Spec, body: string, sectionReference?: string | null) {
   return api<ApiEnvelope<CommentDto>>(`/specs/${apiIdForSpec(spec)}/comments`, {
     method: "POST",
-    body: JSON.stringify({ body }),
+    body: JSON.stringify({ body, sectionReference: sectionReference ?? null }),
+  });
+}
+
+export async function resolveComment(commentId: string) {
+  return api<ApiEnvelope<CommentDto>>(`/comments/${commentId}/resolve`, { method: "POST" });
+}
+
+export async function dismissComment(commentId: string) {
+  return api<ApiEnvelope<CommentDto>>(`/comments/${commentId}/dismiss`, { method: "POST" });
+}
+
+export async function addDecision(spec: Spec, question: string, decision: string) {
+  return api<ApiEnvelope<DecisionDto>>(`/specs/${apiIdForSpec(spec)}/decisions`, {
+    method: "POST",
+    body: JSON.stringify({ question, decision }),
   });
 }
 
@@ -341,9 +497,53 @@ export async function generateAgentContextForSpec(spec: Spec) {
   });
 }
 
+export async function getLatestAgentContextForSpec(spec: Spec) {
+  return apiOrNull<ApiEnvelope<AgentContextDto>>(`/agent/specs/${apiIdForSpec(spec)}/contexts/latest`);
+}
+
 export async function runSpecCodeCheckForSpec(spec: Spec) {
   return api<ApiEnvelope<SpecCodeCheckDto>>(`/agent/specs/${apiIdForSpec(spec)}/run-spec-check`, {
     method: "POST",
+  });
+}
+
+export async function getLatestSpecCheckForSpec(spec: Spec) {
+  return apiOrNull<ApiEnvelope<SpecCodeCheckDto>>(`/agent/specs/${apiIdForSpec(spec)}/spec-checks/latest`);
+}
+
+export async function getSpecAssets(spec: Spec) {
+  return api<ApiEnvelope<SpecAssetDto[]>>(`/specs/${apiIdForSpec(spec)}/assets`);
+}
+
+export async function uploadSpecImage(
+  spec: Spec,
+  file: File,
+  metadata?: { altText?: string | null; caption?: string | null },
+) {
+  const formData = new FormData();
+  formData.set("file", file);
+  if (metadata?.altText) formData.set("altText", metadata.altText);
+  if (metadata?.caption) formData.set("caption", metadata.caption);
+  return api<ApiEnvelope<{ asset: SpecAssetDto }>>(`/specs/${apiIdForSpec(spec)}/assets`, {
+    method: "POST",
+    body: formData,
+  });
+}
+
+export async function updateSpecAsset(
+  spec: Spec,
+  assetId: string,
+  metadata: { altText?: string | null; caption?: string | null },
+) {
+  return api<ApiEnvelope<SpecAssetDto>>(`/specs/${apiIdForSpec(spec)}/assets/${assetId}`, {
+    method: "PATCH",
+    body: JSON.stringify(metadata),
+  });
+}
+
+export async function deleteSpecAsset(spec: Spec, assetId: string) {
+  return api<ApiEnvelope<{ deleted: true }>>(`/specs/${apiIdForSpec(spec)}/assets/${assetId}`, {
+    method: "DELETE",
   });
 }
 
