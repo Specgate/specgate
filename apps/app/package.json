@@ -46,7 +46,6 @@
     "@corely/modules-preview": "workspace:*",
     "@corely/modules-specs": "workspace:*",
     "@corely/storage": "workspace:*",
-    "@corely/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "^1.170.16",
     "class-variance-authority": "^0.7.1",
