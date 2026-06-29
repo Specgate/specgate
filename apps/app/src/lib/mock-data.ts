@@ -1,6 +1,6 @@
 import type { User, Milestone, BuildCycle, Spec, Comment, Activity, DemoState } from "@/types/demo";
 
-export const projects = [
+export const fallbackProjects = [
   { id: "launchos", name: "LaunchOS" },
   { id: "talelingo", name: "TaleLingo" },
   { id: "corelynext", name: "CorelyNext" },
@@ -253,6 +253,7 @@ export const activities: Activity[] = [
 export const initialState: DemoState = {
   mode: "team",
   currentProjectId: "launchos",
+  projects: fallbackProjects,
   specs,
   comments,
   activities,

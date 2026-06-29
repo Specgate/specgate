@@ -29,6 +29,12 @@ export interface Milestone {
   targetDate: string;
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  slug?: string;
+}
+
 export interface Comment {
   id: string;
   specId: string;
@@ -45,6 +51,8 @@ export interface Decision {
 
 export interface Spec {
   id: string;
+  apiId?: string;
+  projectId?: string;
   title: string;
   status: SpecStatus;
   priority: Priority;
@@ -91,6 +99,7 @@ export interface Activity {
 export interface DemoState {
   mode: DemoMode;
   currentProjectId: string;
+  projects: Project[];
   specs: Spec[];
   comments: Comment[];
   activities: Activity[];

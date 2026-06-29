@@ -106,7 +106,21 @@ function SettingsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setResetOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => { reset(); setResetOpen(false); toast.success("Demo data reset."); }}>Reset</Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                void reset()
+                  .then(() => {
+                    setResetOpen(false);
+                    toast.success("Demo data reset.");
+                  })
+                  .catch((error) =>
+                    toast.error(error instanceof Error ? error.message : "Could not reset demo data."),
+                  );
+              }}
+            >
+              Reset
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

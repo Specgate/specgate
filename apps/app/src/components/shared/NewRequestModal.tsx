@@ -24,7 +24,7 @@ import { useNavigate } from "@tanstack/react-router";
 import type { Priority, RoadmapLane } from "@/types/demo";
 
 export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
-  const { state, addSpec, addActivity } = useDemoStore();
+  const { state, addSpec } = useDemoStore();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [why, setWhy] = useState("");
@@ -32,14 +32,15 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
   const [priority, setPriority] = useState<Priority>("medium");
   const [timeline, setTimeline] = useState("MVP");
 
-  function submit() {
+  async function submit() {
     if (!title.trim()) {
       toast.error("Please describe what you want to build.");
       return;
     }
     const id = nextRequestId(state.specs);
     const lane: RoadmapLane = priority === "urgent" || priority === "high" ? "Now" : "Icebox";
-    addSpec({
+    try {
+      const created = await addSpec({
       id,
       title: title.slice(0, 80),
       status: "request",
@@ -58,17 +59,14 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
       ],
       decisions: [],
       updatedAt: new Date().toISOString().slice(0, 10),
-    });
-    addActivity({
-      id: `a-${Date.now()}`,
-      text: `Ha created ${id} from a request.`,
-      time: "just now",
-      specId: id,
-    });
-    toast.success("Request created. AI has generated clarification questions.");
-    onOpenChange(false);
-    setTitle(""); setWhy(""); setWho("");
-    navigate({ to: "/specs/$id", params: { id } });
+      });
+      toast.success("Request created. AI has generated clarification questions.");
+      onOpenChange(false);
+      setTitle(""); setWhy(""); setWho("");
+      navigate({ to: "/specs/$id", params: { id: created.id } });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not create request.");
+    }
   }
 
   return (

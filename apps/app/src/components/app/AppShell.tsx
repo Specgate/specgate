@@ -25,7 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDemoStore } from "@/lib/demo-store";
-import { projects } from "@/lib/mock-data";
 import { toast } from "sonner";
 import { NewRequestModal } from "@/components/shared/NewRequestModal";
 
@@ -42,9 +41,10 @@ const nav = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { state, setMode, setProject } = useDemoStore();
+  const { state, loading, error, refresh, setMode, setProject } = useDemoStore();
   const [newOpen, setNewOpen] = useState(false);
   const navigate = useNavigate();
+  const projects = state.projects;
   const projectName = projects.find((p) => p.id === state.currentProjectId)?.name ?? "LaunchOS";
 
   return (
@@ -102,7 +102,14 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
 
           <div className="hidden md:flex items-center gap-2">
-            <Select value={state.currentProjectId} onValueChange={(v) => { setProject(v); toast.success(`Switched to ${projects.find(p=>p.id===v)?.name} mock project.`); }}>
+            <Select
+              value={state.currentProjectId}
+              onValueChange={(v) => {
+                void setProject(v).then(() => {
+                  toast.success(`Switched to ${projects.find((p) => p.id === v)?.name ?? "project"}.`);
+                });
+              }}
+            >
               <SelectTrigger className="h-8 w-44 bg-card border-border">
                 <SelectValue />
               </SelectTrigger>
@@ -187,11 +194,25 @@ export function AppShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <main className="flex-1 min-w-0">{children}</main>
+        <main className="flex-1 min-w-0">
+          {error ? (
+            <div className="m-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
+              <div className="font-medium text-destructive">SpecGate API failed to load</div>
+              <p className="mt-1 text-muted-foreground">{error}</p>
+              <Button size="sm" variant="outline" className="mt-3" onClick={() => void refresh()}>
+                Retry
+              </Button>
+            </div>
+          ) : loading && state.specs.length === 0 ? (
+            <div className="p-6 text-sm text-muted-foreground">Loading SpecGate data...</div>
+          ) : (
+            children
+          )}
+        </main>
 
         <footer className="border-t border-border px-6 py-3 text-xs text-muted-foreground flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-primary" /> Frontend demo · mock data only
+            <Sparkles className="h-3 w-3 text-primary" /> Connected to SpecGate API
           </span>
           <span>SpecPilot</span>
         </footer>

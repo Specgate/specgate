@@ -34,13 +34,19 @@ function RoadmapPage() {
   const { state, setSpecLane } = useDemoStore();
   const [open, setOpen] = useState(false);
 
-  function applyPlan() {
-    setSpecLane("REQ-002", "Now");
-    setSpecLane("REQ-004", "Next");
-    setSpecLane("REQ-005", "Later");
-    setSpecLane("REQ-007", "Icebox");
-    toast.success("Roadmap suggestions applied.");
-    setOpen(false);
+  async function applyPlan() {
+    try {
+      await Promise.all([
+        setSpecLane("REQ-002", "Now"),
+        setSpecLane("REQ-004", "Next"),
+        setSpecLane("REQ-005", "Later"),
+        setSpecLane("REQ-007", "Icebox"),
+      ]);
+      toast.success("Roadmap suggestions applied.");
+      setOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not apply roadmap suggestions.");
+    }
   }
 
   return (
@@ -88,7 +94,16 @@ function RoadmapPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {lanes.filter((l) => l !== lane).map((l) => (
-                            <DropdownMenuItem key={l} onClick={() => { setSpecLane(s.id, l); toast.success(`Moved to ${l}`); }}>
+                            <DropdownMenuItem
+                              key={l}
+                              onClick={() => {
+                                void setSpecLane(s.id, l)
+                                  .then(() => toast.success(`Moved to ${l}`))
+                                  .catch((error) =>
+                                    toast.error(error instanceof Error ? error.message : `Could not move to ${l}`),
+                                  );
+                              }}
+                            >
                               Move to {l}
                             </DropdownMenuItem>
                           ))}
