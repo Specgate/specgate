@@ -12,6 +12,12 @@
     "@corely/api-client": "workspace:*",
     "@corely/contracts": "workspace:*",
     "@corely/kernel": "workspace:*",
+    "@corely/modules-activity": "workspace:*",
+    "@corely/modules-agent": "workspace:*",
+    "@corely/modules-implementation": "workspace:*",
+    "@corely/modules-planning": "workspace:*",
+    "@corely/modules-preview": "workspace:*",
+    "@corely/modules-specs": "workspace:*",
     "@corely/modules-todos": "workspace:*",
     "@corely/storage": "workspace:*",
     "@corely/ui": "workspace:*",
@@ -20,15 +26,18 @@
     "next": "catalog:",
     "pg": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@corely/tailwind-preset": "workspace:*",
+    "@corely/tsconfig": "workspace:*",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "autoprefixer": "catalog:",
     "postcss": "catalog:",
+    "prisma": "catalog:",
     "tailwindcss": "catalog:",
     "tailwindcss-animate": "catalog:",
     "typescript": "catalog:"

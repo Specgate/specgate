@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "e2e": "playwright test",
+    "e2e:api": "node scripts/generate-app-prisma-client.mjs && pnpm --dir ../app exec prisma generate --schema .prisma-schema && playwright test --config playwright.api.config.ts",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "e2e:debug": "playwright test --debug"

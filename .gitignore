@@ -77,6 +77,9 @@ web_modules/
 # Next.js build output
 .next
 out
+apps/app/.prisma-schema/
+apps/e2e/playwright-report/
+apps/e2e/test-results/
 
 # Nuxt.js build / generate output
 .nuxt

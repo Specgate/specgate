@@ -1,0 +1,325 @@
+model SpecGateProject {
+  id               String   @id @default(cuid())
+  tenantId         String
+  name             String
+  slug             String
+  description      String?
+  gitProvider      String?
+  gitRepoUrl       String?
+  gitDefaultBranch String?
+  requirementsPath String?
+  assetsPath       String?
+  agentContextPath String?
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
+
+  specs SpecGateSpec[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@map("specgate_projects")
+}
+
+model SpecGateSpec {
+  id                     String    @id @default(cuid())
+  tenantId               String
+  projectId              String
+  specNumber             String
+  title                  String
+  slug                   String
+  summary                String?
+  description            String?
+  status                 String
+  priority               String
+  roadmapLane            String
+  targetMilestoneId      String?
+  buildCycleId           String?
+  ownerId                String?
+  assigneeId             String?
+  approvedVersionId      String?
+  approvedBy             String?
+  approvedAt             DateTime? @db.Timestamptz(6)
+  acceptedBy             String?
+  acceptedAt             DateTime? @db.Timestamptz(6)
+  doneAt                 DateTime? @db.Timestamptz(6)
+  acceptanceCriteriaJson Json?
+  outOfScopeJson         Json?
+  relatedFilesJson       Json?
+  technicalNotes         String?
+  uiNotes                String?
+  createdBy              String
+  createdAt              DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime  @updatedAt @db.Timestamptz(6)
+
+  project   SpecGateProject       @relation(fields: [projectId], references: [id])
+  versions  SpecGateSpecVersion[]
+  comments  SpecGateComment[]
+  decisions SpecGateDecision[]
+
+  @@unique([tenantId, projectId, specNumber])
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, status])
+  @@index([tenantId, roadmapLane])
+  @@index([tenantId, buildCycleId])
+  @@index([tenantId, targetMilestoneId])
+  @@map("specgate_specs")
+}
+
+model SpecGateSpecVersion {
+  id               String   @id @default(cuid())
+  tenantId         String
+  specId           String
+  versionNumber    Int
+  summarySnapshot  String?
+  markdownSnapshot String
+  createdBy        String
+  changeSummary    String?
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+
+  spec SpecGateSpec @relation(fields: [specId], references: [id])
+
+  @@unique([tenantId, specId, versionNumber])
+  @@index([tenantId])
+  @@index([tenantId, specId])
+  @@map("specgate_spec_versions")
+}
+
+model SpecGateComment {
+  id               String    @id @default(cuid())
+  tenantId         String
+  specId           String
+  userId           String
+  body             String
+  sectionReference String?
+  status           String
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
+  resolvedAt       DateTime? @db.Timestamptz(6)
+  resolvedBy       String?
+
+  spec SpecGateSpec @relation(fields: [specId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, specId])
+  @@index([tenantId, status])
+  @@map("specgate_comments")
+}
+
+model SpecGateDecision {
+  id        String   @id @default(cuid())
+  tenantId  String
+  specId    String
+  question  String
+  decision  String
+  decidedBy String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  spec SpecGateSpec @relation(fields: [specId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, specId])
+  @@map("specgate_decisions")
+}
+
+model SpecGateMilestone {
+  id          String    @id @default(cuid())
+  tenantId    String
+  projectId   String
+  name        String
+  description String?
+  targetDate  DateTime? @db.Timestamptz(6)
+  status      String
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, status])
+  @@map("specgate_milestones")
+}
+
+model SpecGateBuildCycle {
+  id        String    @id @default(cuid())
+  tenantId  String
+  projectId String
+  name      String
+  goal      String?
+  startDate DateTime? @db.Timestamptz(6)
+  endDate   DateTime? @db.Timestamptz(6)
+  status    String
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, status])
+  @@map("specgate_build_cycles")
+}
+
+model SpecGateBuildQueueItem {
+  id           String   @id @default(cuid())
+  tenantId     String
+  projectId    String
+  specId       String
+  priorityRank Int      @default(0)
+  assignedTo   String?
+  buildCycleId String?
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([tenantId, specId])
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, buildCycleId])
+  @@index([tenantId, specId])
+  @@map("specgate_build_queue_items")
+}
+
+model SpecGateAgentContext {
+  id          String   @id @default(cuid())
+  tenantId    String
+  projectId   String
+  specId      String
+  targetAgent String
+  markdown    String
+  contextJson Json?
+  createdBy   String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@index([tenantId, specId, createdAt])
+  @@map("specgate_agent_contexts")
+}
+
+model GitSyncRecord {
+  id            String   @id @default(cuid())
+  tenantId      String
+  projectId     String
+  specId        String
+  provider      String
+  fakeCommitSha String
+  path          String
+  status        String
+  createdBy     String
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@index([tenantId, specId, createdAt])
+  @@map("specgate_git_sync_records")
+}
+
+model SpecGateSpecCodeCheck {
+  id                   String   @id @default(cuid())
+  tenantId             String
+  projectId            String
+  specId               String
+  status               String
+  summary              String
+  mismatchFindingsJson Json?
+  createdBy            String
+  createdAt            DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@index([tenantId, specId, createdAt])
+  @@map("specgate_spec_code_checks")
+}
+
+model ImplementationRecord {
+  id             String   @id @default(cuid())
+  tenantId       String
+  projectId      String
+  specId         String
+  status         String
+  branchName     String?
+  pullRequestUrl String?
+  developerId    String?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([tenantId, specId])
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, developerId])
+  @@index([tenantId, status])
+  @@map("specgate_implementation_records")
+}
+
+model SpecGateDeveloperReview {
+  id         String   @id @default(cuid())
+  tenantId   String
+  projectId  String
+  specId     String
+  reviewerId String
+  status     String
+  notes      String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@index([tenantId, reviewerId])
+  @@index([tenantId, status])
+  @@map("specgate_developer_reviews")
+}
+
+model SpecGatePreviewReview {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  specId          String
+  previewUrl      String?
+  environment     String
+  status          String
+  feedback        String?
+  rejectionReason String?
+  reviewedBy      String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@index([tenantId, status])
+  @@map("specgate_preview_reviews")
+}
+
+model SpecGatePreviewChecklist {
+  id        String   @id @default(cuid())
+  tenantId  String
+  projectId String
+  specId    String
+  itemsJson Json?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@map("specgate_preview_checklists")
+}
+
+model SpecGateActivity {
+  id           String   @id @default(cuid())
+  tenantId     String
+  projectId    String
+  specId       String?
+  actorId      String
+  type         String
+  message      String
+  metadataJson Json?
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([tenantId, projectId])
+  @@index([tenantId, specId])
+  @@index([tenantId, type])
+  @@index([tenantId, createdAt])
+  @@map("specgate_activities")
+}
