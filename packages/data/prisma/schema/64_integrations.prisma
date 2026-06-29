@@ -1,0 +1,20 @@
+model IntegrationConnection {
+  id              String   @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  providerKey     String   @db.VarChar(120)
+  authMethod      String   @db.VarChar(32)
+  status          String   @default("active") @db.VarChar(32)
+  displayName     String?  @db.VarChar(120)
+  configJson      Json?
+  secretEncrypted String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, providerKey, status])
+  @@index([workspaceId, providerKey, status])
+}

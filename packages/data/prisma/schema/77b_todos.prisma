@@ -1,0 +1,17 @@
+model Todo {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String?
+  title       String
+  description String?
+  status      String   @default("open") // "open", "done"
+  priority    String   @default("medium") // "low", "medium", "high"
+  dueDate     DateTime? @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId])
+  @@index([workspaceId])
+  @@index([tenantId, status])
+  @@map("todos")
+}
