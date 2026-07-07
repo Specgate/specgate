@@ -21,7 +21,7 @@ export const specGateDemoUsers = [
     id: "u-ha",
     tenantId: "tenant_demo",
     name: "Ha",
-    email: "ha@yopmail.com",
+    email: "ha@example.com",
     role: "Founder",
     avatar: "H",
     membershipRole: "admin",
@@ -32,7 +32,7 @@ export const specGateDemoUsers = [
     id: "u-minh",
     tenantId: "tenant_demo",
     name: "Minh",
-    email: "minh@yopmail.com",
+    email: "minh@example.com",
     role: "Product Lead",
     avatar: "M",
     membershipRole: "product_lead",
@@ -43,7 +43,7 @@ export const specGateDemoUsers = [
     id: "u-david",
     tenantId: "tenant_demo",
     name: "David",
-    email: "david@yopmail.com",
+    email: "david@example.com",
     role: "Developer",
     avatar: "D",
     membershipRole: "developer",
@@ -54,7 +54,7 @@ export const specGateDemoUsers = [
     id: "u-anna",
     tenantId: "tenant_demo",
     name: "Anna",
-    email: "anna@yopmail.com",
+    email: "anna@example.com",
     role: "Stakeholder",
     avatar: "A",
     membershipRole: "stakeholder",
@@ -65,7 +65,7 @@ export const specGateDemoUsers = [
     id: "u-linh",
     tenantId: "tenant_demo",
     name: "Linh",
-    email: "linh@yopmail.com",
+    email: "linh@example.com",
     role: "Designer",
     avatar: "L",
     membershipRole: "stakeholder",
@@ -76,7 +76,7 @@ export const specGateDemoUsers = [
     id: "u-sara",
     tenantId: "tenant_demo",
     name: "Sara",
-    email: "sara@yopmail.com",
+    email: "sara@example.com",
     role: "Viewer",
     avatar: "S",
     membershipRole: "viewer",
@@ -87,7 +87,7 @@ export const specGateDemoUsers = [
     id: "u-noah",
     tenantId: "tenant_demo",
     name: "Noah",
-    email: "noah@yopmail.com",
+    email: "noah@example.com",
     role: "Developer",
     avatar: "N",
     membershipRole: "developer",
@@ -98,7 +98,7 @@ export const specGateDemoUsers = [
     id: "u-disabled",
     tenantId: "tenant_demo",
     name: "Disabled User",
-    email: "disabled@yopmail.com",
+    email: "disabled@example.com",
     role: "Former Member",
     avatar: "X",
     membershipRole: "viewer",
@@ -171,7 +171,7 @@ export const specGateOtherTenantUsers = [
     id: "u-other-admin",
     tenantId: "tenant_other",
     name: "Other Admin",
-    email: "other-admin@yopmail.com",
+    email: "other-admin@example.com",
     role: "Admin",
     avatar: "O",
     membershipRole: "admin",
@@ -182,7 +182,7 @@ export const specGateOtherTenantUsers = [
     id: "u-other-dev",
     tenantId: "tenant_other",
     name: "Other Developer",
-    email: "other-dev@yopmail.com",
+    email: "other-dev@example.com",
     role: "Developer",
     avatar: "D",
     membershipRole: "developer",
@@ -321,7 +321,7 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
 
   // 3. Seed Users
   const allUsers = [...specGateDemoUsers, ...specGateOtherTenantUsers];
-  const credentialHash = hashPassword("SpecGateDemo123!");
+  const credentialHash = hashPassword("111111");
 
   for (const u of allUsers) {
     const isNoCredential = u.id === "u-noah" || u.id === "u-disabled";
@@ -2140,15 +2140,15 @@ async function main() {
 
     if (process.env.NODE_ENV !== "production") {
       console.log("\nLocal demo login accounts (Passwordless Login):");
-      console.log("  Founder (Admin):       ha@yopmail.com");
-      console.log("  Product Lead (Product): minh@yopmail.com");
-      console.log("  Developer (Dev):        david@yopmail.com");
-      console.log("  Stakeholder (Anna):    anna@yopmail.com");
-      console.log("  Designer (Linh):       linh@yopmail.com");
-      console.log("  Viewer (Sara):         sara@yopmail.com");
+      console.log("  Founder (Admin):       ha@example.com");
+      console.log("  Product Lead (Product): minh@example.com");
+      console.log("  Developer (Dev):        david@example.com");
+      console.log("  Stakeholder (Anna):    anna@example.com");
+      console.log("  Designer (Linh):       linh@example.com");
+      console.log("  Viewer (Sara):         sara@example.com");
       console.log("\n  Credentials are NOT enabled for:");
-      console.log("    Invited Developer (Noah): noah@yopmail.com");
-      console.log("    Disabled (Former):       disabled@yopmail.com");
+      console.log("    Invited Developer (Noah): noah@example.com");
+      console.log("    Disabled (Former):       disabled@example.com");
       console.log("=======================================================");
     }
 

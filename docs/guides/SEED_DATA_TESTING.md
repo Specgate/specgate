@@ -10,14 +10,14 @@ The seed data populates several users under `tenant_demo` with specific roles an
 
 | User Email | Role | Membership Status | Use Cases |
 | :--- | :--- | :--- | :--- |
-| **`ha@yopmail.com`** | `admin` | `ACTIVE` | Spec approvals, workspace configuration, tenant settings. |
-| **`minh@yopmail.com`** | `product_lead` | `ACTIVE` | Spec authoring, target milestones, build cycle management. |
-| **`david@yopmail.com`** | `developer` | `ACTIVE` | Starting development, linking PRs, completing developer reviews. |
-| **`anna@yopmail.com`** | `stakeholder` | `ACTIVE` | Preview approvals, stakeholder review feedback. |
-| **`linh@yopmail.com`** | `designer` | `ACTIVE` | Commenting on specs and UI designs. |
-| **`sara@yopmail.com`** | `viewer` | `ACTIVE` | Read-only access validation. |
-| **`noah@yopmail.com`** | `developer` | `INVITED` | Testing invitation flow, pending memberships. (Sign-in disabled) |
-| **`disabled@yopmail.com`**| `developer` | `DISABLED` | Testing authorization checks for disabled accounts. (Status is `INACTIVE`) |
+| **`ha@example.com`** | `admin` | `ACTIVE` | Spec approvals, workspace configuration, tenant settings. |
+| **`minh@example.com`** | `product_lead` | `ACTIVE` | Spec authoring, target milestones, build cycle management. |
+| **`david@example.com`** | `developer` | `ACTIVE` | Starting development, linking PRs, completing developer reviews. |
+| **`anna@example.com`** | `stakeholder` | `ACTIVE` | Preview approvals, stakeholder review feedback. |
+| **`linh@example.com`** | `designer` | `ACTIVE` | Commenting on specs and UI designs. |
+| **`sara@example.com`** | `viewer` | `ACTIVE` | Read-only access validation. |
+| **`noah@example.com`** | `developer` | `INVITED` | Testing invitation flow, pending memberships. (Sign-in disabled) |
+| **`disabled@example.com`**| `developer` | `DISABLED` | Testing authorization checks for disabled accounts. (Status is `INACTIVE`) |
 
 ---
 
@@ -26,8 +26,8 @@ The seed data populates several users under `tenant_demo` with specific roles an
 To verify that tenant boundaries are fully respected by backend queries and services, the seeder also creates an isolated tenant (`tenant_other`).
 
 - **Isolated Tenant ID**: `tenant_other`
-- **Isolated Admin**: `u-other-admin` (`other-admin@yopmail.com`)
-- **Isolated Developer**: `u-other-dev` (`other-dev@yopmail.com`)
+- **Isolated Admin**: `u-other-admin` (`other-admin@example.com`)
+- **Isolated Developer**: `u-other-dev` (`other-dev@example.com`)
 - **Isolated Project**: `project_other` (`Other-Tenant Workspace`)
 - **Isolated Spec**: `spec_other_req_001` (`REQ-001: Private Accounting API`)
 

@@ -126,77 +126,83 @@ export function SpecGateAppShell({ children }: { children: any }): any {
           </Link>
 
           <div className="hidden md:flex items-center gap-2">
-            <Select
-              open={workspaceSelectOpen}
-              onOpenChange={setWorkspaceSelectOpen}
-              value={state.currentWorkspaceId}
-              onValueChange={(v) => {
-                void setWorkspace(v).then(() => {
-                  toast.success(
-                    `Switched to ${workspaces.find((w) => w.id === v)?.name ?? "workspace"}.`,
-                  );
-                });
-              }}
-            >
-              <SelectTrigger className="h-8 w-40 bg-card border-border font-medium">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {workspaces.map((w) => (
-                  <SelectItem key={w.id} value={w.id}>
-                    {w.name}
-                  </SelectItem>
-                ))}
-                <SelectSeparator />
-                <button
-                  type="button"
-                  className="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-primary outline-none hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => {
-                    setWorkspaceSelectOpen(false);
-                    requestAnimationFrame(() => setNewWorkspaceOpen(true));
-                  }}
-                >
-                    <Plus className="h-4 w-4" />
-                    <span>New Workspace</span>
-                </button>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-1">
+              <Select
+                open={workspaceSelectOpen}
+                onOpenChange={setWorkspaceSelectOpen}
+                value={state.currentWorkspaceId}
+                onValueChange={(v) => {
+                  void setWorkspace(v).then(() => {
+                    toast.success(
+                      `Switched to ${workspaces.find((w) => w.id === v)?.name ?? "workspace"}.`,
+                    );
+                  });
+                }}
+              >
+                <SelectTrigger className="h-8 w-40 bg-card border-border font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {workspaces.map((w) => (
+                    <SelectItem key={w.id} value={w.id}>
+                      {w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-muted-foreground"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTimeout(() => setNewWorkspaceOpen(true), 10);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                New Workspace
+              </Button>
+            </div>
+
             <span className="text-muted-foreground">/</span>
-            <Select
-              open={projectSelectOpen}
-              onOpenChange={setProjectSelectOpen}
-              value={state.currentProjectId}
-              onValueChange={(v) => {
-                void setProject(v).then(() => {
-                  toast.success(
-                    `Switched to ${projects.find((p) => p.id === v)?.name ?? "project"}.`,
-                  );
-                });
-              }}
-            >
-              <SelectTrigger className="h-8 w-44 bg-card border-border">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-                <SelectSeparator />
-                <button
-                  type="button"
-                  className="relative flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm font-medium text-primary outline-none hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => {
-                    setProjectSelectOpen(false);
-                    requestAnimationFrame(() => setNewProjectOpen(true));
-                  }}
-                >
-                    <Plus className="h-4 w-4" />
-                    <span>New Project</span>
-                </button>
-              </SelectContent>
-            </Select>
+
+            <div className="flex items-center gap-1">
+              <Select
+                open={projectSelectOpen}
+                onOpenChange={setProjectSelectOpen}
+                value={state.currentProjectId}
+                onValueChange={(v) => {
+                  void setProject(v).then(() => {
+                    toast.success(
+                      `Switched to ${projects.find((p) => p.id === v)?.name ?? "project"}.`,
+                    );
+                  });
+                }}
+              >
+                <SelectTrigger className="h-8 w-44 bg-card border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-muted-foreground"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTimeout(() => setNewProjectOpen(true), 10);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                New Project
+              </Button>
+            </div>
           </div>
 
           <div className="flex-1 max-w-md">
@@ -268,7 +274,9 @@ export function SpecGateAppShell({ children }: { children: any }): any {
                 href={item.href}
                 className={cn(
                   "shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs",
-                  active ? "bg-accent text-foreground" : "text-muted-foreground",
+                  active
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground",
                 )}
               >
                 <Icon className="h-3.5 w-3.5" />

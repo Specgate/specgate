@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
 import { Button } from "@corely/ui";

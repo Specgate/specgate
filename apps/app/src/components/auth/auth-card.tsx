@@ -86,7 +86,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
       if (onSuccess) {
         onSuccess();
       } else {
-        window.location.href = "/dashboard";
+        window.location.href = "/home";
       }
     } catch (err) {
       console.error(err);

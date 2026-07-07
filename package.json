@@ -37,6 +37,7 @@
     "coverage": "vitest run --workspace ./vitest.workspace.ts --coverage"
   },
   "devDependencies": {
+    "@corely/tsconfig": "workspace:*",
     "@eslint/js": "catalog:",
     "@types/node": "catalog:",
     "@vitest/coverage-v8": "catalog:",
