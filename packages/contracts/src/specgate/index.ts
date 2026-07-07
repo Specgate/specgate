@@ -6,3 +6,5 @@ export * from "./agent";
 export * from "./implementation";
 export * from "./preview";
 export * from "./activity";
+export * from "./engineering-context";
+export * from "./copilot.contracts";

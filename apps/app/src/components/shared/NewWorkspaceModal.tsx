@@ -7,10 +7,10 @@ import { toast } from "sonner";
 import { createWorkspace } from "@/lib/specgate-api";
 import { useSpecGateStore } from "@/lib/specgate-store";
 
-export function NewWorkspaceModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function NewWorkspaceModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }): any {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { setWorkspace, refresh } = useSpecGateStore();
+  const { setWorkspace } = useSpecGateStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +19,6 @@ export function NewWorkspaceModal({ open, onOpenChange }: { open: boolean; onOpe
     setLoading(true);
     try {
       const workspace = await createWorkspace(name.trim());
-      await refresh(undefined, undefined, workspace.id); 
       await setWorkspace(workspace.id);
       toast.success(`Workspace "${workspace.name}" created successfully`);
       setTimeout(() => onOpenChange(false), 0);

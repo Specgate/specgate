@@ -67,10 +67,17 @@ export const SpecSchema = z.object({
   acceptedBy: z.string().nullable(),
   acceptedAt: IsoDateSchema.nullable(),
   doneAt: IsoDateSchema.nullable(),
+  background: z.string().nullable(),
+  currentBehavior: z.string().nullable(),
+  desiredOutcome: z.string().nullable(),
   acceptanceCriteria: z.array(z.string()),
   outOfScope: z.array(z.string()),
   openQuestions: z.array(z.string()),
   relatedFiles: z.array(z.string()),
+  edgeCases: z.array(z.string()),
+  securityNotes: z.string().nullable(),
+  suggestedSearchTerms: z.array(z.string()),
+  verificationPlan: z.array(z.string()),
   technicalNotes: z.string().nullable(),
   uiNotes: z.string().nullable(),
   createdBy: z.string(),
@@ -91,10 +98,18 @@ export const ApprovedSpecSnapshotSchema = SpecSchema.pick({
   status: true,
   priority: true,
   roadmapLane: true,
+  assigneeId: true,
+  background: true,
+  currentBehavior: true,
+  desiredOutcome: true,
   acceptanceCriteria: true,
   outOfScope: true,
   openQuestions: true,
   relatedFiles: true,
+  edgeCases: true,
+  securityNotes: true,
+  suggestedSearchTerms: true,
+  verificationPlan: true,
   technicalNotes: true,
   uiNotes: true,
   approvedBy: true,
@@ -248,6 +263,28 @@ export const SpecCodeCheckSchema = z.object({
 });
 export type SpecCodeCheckDto = z.infer<typeof SpecCodeCheckSchema>;
 
+export const SpecCheckSummarySchema = SpecCodeCheckSchema.pick({
+  id: true,
+  tenantId: true,
+  projectId: true,
+  specId: true,
+  status: true,
+  summary: true,
+  createdBy: true,
+  createdAt: true,
+});
+export type SpecCheckSummaryDto = z.infer<typeof SpecCheckSummarySchema>;
+
+export const SpecListSummarySchema = z.object({
+  spec: SpecSchema,
+  commentCount: z.number().int().nonnegative(),
+  decisionCount: z.number().int().nonnegative(),
+  assetCount: z.number().int().nonnegative(),
+  latestCheck: SpecCheckSummarySchema.nullable(),
+  latestActivityAt: IsoDateSchema.nullable(),
+});
+export type SpecListSummaryDto = z.infer<typeof SpecListSummarySchema>;
+
 export const ImplementationRecordSchema = z.object({
   id: IdSchema,
   tenantId: z.string(),
@@ -329,10 +366,17 @@ export const SpecInputSchema = z.object({
   targetMilestoneId: z.string().optional().nullable(),
   ownerId: z.string().optional().nullable(),
   assigneeId: z.string().optional().nullable(),
+  background: z.string().optional().nullable(),
+  currentBehavior: z.string().optional().nullable(),
+  desiredOutcome: z.string().optional().nullable(),
   acceptanceCriteria: z.array(z.string()).optional(),
   outOfScope: z.array(z.string()).optional(),
   openQuestions: z.array(z.string()).optional(),
   relatedFiles: z.array(z.string()).optional(),
+  edgeCases: z.array(z.string()).optional(),
+  securityNotes: z.string().optional().nullable(),
+  suggestedSearchTerms: z.array(z.string()).optional(),
+  verificationPlan: z.array(z.string()).optional(),
   technicalNotes: z.string().optional().nullable(),
   uiNotes: z.string().optional().nullable(),
 });

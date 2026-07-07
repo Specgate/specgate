@@ -16,6 +16,7 @@ model SpecGateProject {
 
   workspace Workspace?       @relation(fields: [workspaceId], references: [id])
   specs     SpecGateSpec[]
+  engineeringContexts SpecGateEngineeringContext[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
@@ -34,6 +35,9 @@ model SpecGateSpec {
   summary                  String?
   audience                 String?
   description              String?
+  background               String?
+  currentBehavior          String?
+  desiredOutcome           String?
   status                   String
   priority                 String
   agentReadiness           String    @default("needs_clarification")
@@ -55,6 +59,8 @@ model SpecGateSpec {
   openQuestionsJson        Json?
   relatedFilesJson         Json?
   agentTargetsJson         Json?
+  edgeCasesJson            Json?
+  securityNotes            String?
   suggestedSearchTermsJson Json?
   verificationPlanJson     Json?
   technicalNotes         String?

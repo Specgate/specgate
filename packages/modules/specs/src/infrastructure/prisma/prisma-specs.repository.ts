@@ -4,6 +4,7 @@ import type {
   DecisionRecord,
   ProjectRecord,
   SpecAssetRecord,
+  SpecCodeCheckSummaryRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../../domain/entities/spec";
@@ -18,6 +19,7 @@ type ModelClient = {
   create(args: unknown): Promise<any>;
   update(args: unknown): Promise<any>;
   count(args?: unknown): Promise<number>;
+  groupBy?(args: unknown): Promise<any[]>;
 };
 
 type PrismaClientShape = {
@@ -27,6 +29,7 @@ type PrismaClientShape = {
   specGateComment: ModelClient;
   specGateDecision: ModelClient;
   specGateSpecAsset: ModelClient;
+  specGateSpecCodeCheck: ModelClient;
 };
 
 const asStringArray = (value: unknown): string[] =>
@@ -156,6 +159,18 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       data.relatedFilesJson = patch.relatedFiles;
       delete data.relatedFiles;
     }
+    if ("edgeCases" in patch) {
+      data.edgeCasesJson = patch.edgeCases;
+      delete data.edgeCases;
+    }
+    if ("suggestedSearchTerms" in patch) {
+      data.suggestedSearchTermsJson = patch.suggestedSearchTerms;
+      delete data.suggestedSearchTerms;
+    }
+    if ("verificationPlan" in patch) {
+      data.verificationPlanJson = patch.verificationPlan;
+      delete data.verificationPlan;
+    }
     const row = await this.prisma.specGateSpec.update({
       where: { id: specId },
       data,
@@ -280,14 +295,126 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
     await (this.prisma.specGateSpecAsset as any).delete({ where: { id: assetId } });
   }
 
+  async countCommentsBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, number>> {
+    return this.countBySpecIds(this.prisma.specGateComment, tenantId, specIds);
+  }
+
+  async countDecisionsBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, number>> {
+    return this.countBySpecIds(this.prisma.specGateDecision, tenantId, specIds);
+  }
+
+  async countAssetsBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, number>> {
+    return this.countBySpecIds(this.prisma.specGateSpecAsset, tenantId, specIds);
+  }
+
+  async findLatestChecksBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, SpecCodeCheckSummaryRecord>> {
+    if (specIds.length === 0) return new Map();
+    const rows = await this.prisma.specGateSpecCodeCheck.findMany({
+      where: { tenantId, specId: { in: specIds } },
+      orderBy: [{ specId: "asc" }, { createdAt: "desc" }],
+    });
+    const latest = new Map<string, SpecCodeCheckSummaryRecord>();
+    for (const row of rows) {
+      if (latest.has(row.specId)) continue;
+      latest.set(row.specId, {
+        id: row.id,
+        tenantId: row.tenantId,
+        projectId: row.projectId,
+        specId: row.specId,
+        status: row.status,
+        summary: row.summary,
+        createdBy: row.createdBy,
+        createdAt: row.createdAt,
+      });
+    }
+    return latest;
+  }
+
+  async findLatestActivityAtBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, Date>> {
+    if (specIds.length === 0) return new Map();
+    const [comments, decisions, assets, checks] = await Promise.all([
+      this.maxCreatedAtBySpecIds(this.prisma.specGateComment, tenantId, specIds),
+      this.maxCreatedAtBySpecIds(this.prisma.specGateDecision, tenantId, specIds),
+      this.maxCreatedAtBySpecIds(this.prisma.specGateSpecAsset, tenantId, specIds),
+      this.maxCreatedAtBySpecIds(this.prisma.specGateSpecCodeCheck, tenantId, specIds),
+    ]);
+    const latest = new Map<string, Date>();
+    for (const map of [comments, decisions, assets, checks]) {
+      for (const [specId, date] of map) {
+        const current = latest.get(specId);
+        if (!current || date > current) latest.set(specId, date);
+      }
+    }
+    return latest;
+  }
+
+  private async countBySpecIds(
+    model: ModelClient,
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, number>> {
+    if (specIds.length === 0 || !model.groupBy) return new Map();
+    const rows = await model.groupBy({
+      by: ["specId"],
+      where: { tenantId, specId: { in: specIds } },
+      _count: { _all: true },
+    });
+    return new Map(rows.map((row) => [row.specId, row._count._all]));
+  }
+
+  private async maxCreatedAtBySpecIds(
+    model: ModelClient,
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, Date>> {
+    if (specIds.length === 0 || !model.groupBy) return new Map();
+    const rows = await model.groupBy({
+      by: ["specId"],
+      where: { tenantId, specId: { in: specIds } },
+      _max: { createdAt: true },
+    });
+    return new Map(
+      rows
+        .filter((row) => row._max.createdAt)
+        .map((row) => [row.specId, row._max.createdAt]),
+    );
+  }
+
   private toSpecData(spec: SpecRecord) {
-    const { acceptanceCriteria, outOfScope, openQuestions, relatedFiles, ...rest } = spec;
+    const { 
+      acceptanceCriteria, 
+      outOfScope, 
+      openQuestions, 
+      relatedFiles, 
+      edgeCases,
+      suggestedSearchTerms,
+      verificationPlan,
+      ...rest 
+    } = spec;
     return {
       ...rest,
       acceptanceCriteriaJson: acceptanceCriteria,
       outOfScopeJson: outOfScope,
       openQuestionsJson: openQuestions,
       relatedFilesJson: relatedFiles,
+      edgeCasesJson: edgeCases,
+      suggestedSearchTermsJson: suggestedSearchTerms,
+      verificationPlanJson: verificationPlan,
     };
   }
 
@@ -319,10 +446,17 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       acceptedBy: row.acceptedBy,
       acceptedAt: row.acceptedAt,
       doneAt: row.doneAt,
+      background: row.background,
+      currentBehavior: row.currentBehavior,
+      desiredOutcome: row.desiredOutcome,
       acceptanceCriteria: asStringArray(row.acceptanceCriteriaJson),
       outOfScope: asStringArray(row.outOfScopeJson),
       openQuestions: asStringArray(row.openQuestionsJson),
       relatedFiles: asStringArray(row.relatedFilesJson),
+      edgeCases: asStringArray(row.edgeCasesJson),
+      securityNotes: row.securityNotes,
+      suggestedSearchTerms: asStringArray(row.suggestedSearchTermsJson),
+      verificationPlan: asStringArray(row.verificationPlanJson),
       technicalNotes: row.technicalNotes,
       uiNotes: row.uiNotes,
       createdBy: row.createdBy,

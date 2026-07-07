@@ -12,10 +12,14 @@ import type {
   ProjectDto,
   SpecAssetDto,
   SpecCodeCheckDto,
+  SpecCheckSummaryDto,
   SpecDto,
   SpecInput,
+  SpecListSummaryDto,
   SpecUpdate,
   WorkspaceDto,
+  AgentTargetDto,
+  AgentReadinessCheckDto,
 } from "@corely/contracts/specgate";
 import type {
   Activity,
@@ -147,15 +151,22 @@ function normalizeSpecCheckStatus(status: string): SpecCheck["status"] {
   return "failed";
 }
 
-function mapSpecCheck(dto: SpecCodeCheckDto, specNumberByApiId: Map<string, string>): SpecCheck {
+function mapSpecCheck(
+  dto: SpecCodeCheckDto | SpecCheckSummaryDto,
+  specNumberByApiId: Map<string, string>,
+): SpecCheck {
+  const details =
+    "mismatchFindings" in dto
+      ? dto.mismatchFindings.map((finding) =>
+          `${finding.severity}: ${finding.message}${finding.file ? ` (${finding.file})` : ""}`,
+        )
+      : [];
   return {
     id: dto.id,
     specId: specNumberByApiId.get(dto.specId) ?? dto.specId,
     status: normalizeSpecCheckStatus(dto.status),
     summary: dto.summary,
-    details: dto.mismatchFindings.map((finding) =>
-      `${finding.severity}: ${finding.message}${finding.file ? ` (${finding.file})` : ""}`,
-    ),
+    details,
     createdAt: dto.createdAt,
   };
 }
@@ -182,12 +193,14 @@ function mapSpec(
     latestPreviewBySpecId: Map<string, PreviewReviewDto>;
     decisionsBySpecId: Map<string, DecisionDto[]>;
     latestSpecCheckBySpecId: Map<string, SpecCheck>;
+    summariesBySpecId?: Map<string, SpecListSummaryDto>;
   },
 ): Spec {
   const queueItem = options.queueBySpecId.get(spec.id);
   const preview = options.latestPreviewBySpecId.get(spec.id);
   const latestSpecCheck = options.latestSpecCheckBySpecId.get(spec.id) ?? null;
   const decisions = options.decisionsBySpecId.get(spec.id) ?? [];
+  const summary = options.summariesBySpecId?.get(spec.id);
 
   return {
     id: spec.specNumber,
@@ -202,14 +215,18 @@ function mapSpec(
     assigneeId: spec.assigneeId ?? queueItem?.assignedTo ?? undefined,
     summary: spec.summary ?? "",
     audience: spec.audience ?? undefined,
-    problem: spec.description ?? spec.summary ?? undefined,
-    expectedBehavior: spec.description ?? spec.summary ?? undefined,
+    background: spec.description ?? spec.summary ?? undefined,
+    desiredOutcome: spec.description ?? spec.summary ?? undefined,
     acceptanceCriteria: spec.acceptanceCriteria,
     outOfScope: spec.outOfScope,
     openQuestions: spec.openQuestions ?? [],
     technicalNotes: spec.technicalNotes ?? undefined,
     uiNotes: spec.uiNotes ?? undefined,
     decisions: decisions.map((decision) => mapDecision(decision, new Map([[spec.id, spec.specNumber]]))),
+    commentCount: summary?.commentCount,
+    decisionCount: summary?.decisionCount,
+    assetCount: summary?.assetCount,
+    latestActivityAt: summary?.latestActivityAt,
     relatedFiles: spec.relatedFiles,
     previewUrl: preview?.previewUrl ?? undefined,
     warning:
@@ -218,7 +235,7 @@ function mapSpec(
         : undefined,
     latestSpecCheck,
     approvedAt: dateOnly(spec.approvedAt) || undefined,
-    updatedAt: dateOnly(spec.updatedAt),
+    updatedAt: dateOnly(summary?.latestActivityAt ?? spec.updatedAt),
     buildCycleId: queueItem?.buildCycleId ?? spec.buildCycleId ?? undefined,
   };
 }
@@ -342,8 +359,12 @@ export async function loadWorkspaceState(options: {
     "";
 
   const query = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
-  const [specs, milestones, buildCycles, queue, reviews, activities] = await Promise.all([
-    api<ApiEnvelope<SpecDto[]>>(`/specs${query}`).then((r) => r.data),
+  const loadStartedAt =
+    process.env.NODE_ENV === "development" && typeof performance !== "undefined"
+      ? performance.now()
+      : null;
+  const [specSummaries, milestones, buildCycles, queue, reviews, activities] = await Promise.all([
+    api<ApiEnvelope<SpecListSummaryDto[]>>(`/specs/summary${query}`).then((r) => r.data),
     api<ApiEnvelope<MilestoneDto[]>>(`/planning/milestones${query}`).then((r) => r.data),
     api<ApiEnvelope<BuildCycleDto[]>>(`/planning/build-cycles${query}`).then((r) => r.data),
     api<ApiEnvelope<BuildQueueItemDto[]>>(`/planning/build-queue${query}`).then((r) => r.data),
@@ -351,45 +372,27 @@ export async function loadWorkspaceState(options: {
     api<ApiEnvelope<ActivityDto[]>>(`/activity${query}`).then((r) => r.data),
   ]);
 
+  const specs = specSummaries.map((summary) => summary.spec);
   const specNumberByApiId = new Map(specs.map((spec) => [spec.id, spec.specNumber]));
   const queueBySpecId = new Map(queue.map((item) => [item.specId, item]));
   const previewsBySpecId = latestPreviewBySpec(reviews);
-
-  const [commentsBySpec, decisionsBySpec, assetsBySpec, specChecksBySpec] = await Promise.all([
-    Promise.all(
-      specs.map(async (spec) => [
-        spec.id,
-        await api<ApiEnvelope<CommentDto[]>>(`/specs/${spec.id}/comments`).then((r) => r.data),
-      ] as const),
-    ),
-    Promise.all(
-      specs.map(async (spec) => [
-        spec.id,
-        await api<ApiEnvelope<DecisionDto[]>>(`/specs/${spec.id}/decisions`).then((r) => r.data),
-      ] as const),
-    ),
-    Promise.all(
-      specs.map(async (spec) => [
-        spec.id,
-        await api<ApiEnvelope<SpecAssetDto[]>>(`/specs/${spec.id}/assets`).then((r) => r.data),
-      ] as const),
-    ),
-    Promise.all(
-      specs.map(async (spec) => [
-        spec.id,
-        await apiOrNull<ApiEnvelope<SpecCodeCheckDto>>(`/agent/specs/${spec.id}/spec-checks/latest`).then(
-          (r) => (r ? r.data : null),
-        ),
-      ] as const),
-    ),
-  ]);
-
-  const decisionsBySpecId = new Map(decisionsBySpec);
+  const summariesBySpecId = new Map(specSummaries.map((summary) => [summary.spec.id, summary]));
+  const decisionsBySpecId = new Map<string, DecisionDto[]>();
   const latestSpecCheckBySpecId = new Map(
-    specChecksBySpec
-      .filter(([, dto]) => dto)
-      .map(([specId, dto]) => [specId, mapSpecCheck(dto as SpecCodeCheckDto, specNumberByApiId)]),
+    specSummaries
+      .filter((summary) => summary.latestCheck)
+      .map((summary) => [
+        summary.spec.id,
+        mapSpecCheck(summary.latestCheck as SpecCheckSummaryDto, specNumberByApiId),
+      ]),
   );
+  if (loadStartedAt !== null) {
+    console.debug(
+      `[SpecGate] workspace list loaded with 1 spec summary request in ${Math.round(
+        performance.now() - loadStartedAt,
+      )}ms`,
+    );
+  }
 
   return {
     mode: options.mode,
@@ -403,15 +406,12 @@ export async function loadWorkspaceState(options: {
         latestPreviewBySpecId: previewsBySpecId,
         decisionsBySpecId,
         latestSpecCheckBySpecId,
+        summariesBySpecId,
       }),
     ),
-    comments: commentsBySpec.flatMap(([, comments]) =>
-      comments.map((comment) => mapComment(comment, specNumberByApiId)),
-    ),
-    decisions: decisionsBySpec.flatMap(([, decisions]) =>
-      decisions.map((decision) => mapDecision(decision, specNumberByApiId)),
-    ),
-    assets: assetsBySpec.flatMap(([, assets]) => assets.map(mapSpecAsset)),
+    comments: [],
+    decisions: [],
+    assets: [],
     specChecks: Array.from(latestSpecCheckBySpecId.values()),
     previewReviews: reviews.map((review) => mapPreviewReview(review, specNumberByApiId)),
     activities: activities.map((activity) => mapActivity(activity, specNumberByApiId)),
@@ -425,7 +425,7 @@ function toSpecUpdate(patch: Partial<Spec>): SpecUpdate {
     title: patch.title,
     summary: patch.summary,
     audience: patch.audience,
-    description: patch.expectedBehavior ?? patch.problem,
+    description: patch.desiredOutcome ?? patch.background,
     priority: patch.priority,
     roadmapLane: patch.roadmapLane ? laneToApi(patch.roadmapLane) : undefined,
     targetMilestoneId: patch.milestoneId,
@@ -446,7 +446,7 @@ export async function createSpec(projectId: string, spec: Spec) {
     title: spec.title,
     summary: spec.summary,
     audience: spec.audience ?? null,
-    description: spec.expectedBehavior ?? spec.problem,
+    description: spec.desiredOutcome ?? spec.background ?? spec.summary,
     priority: spec.priority,
     roadmapLane: laneToApi(spec.roadmapLane),
     targetMilestoneId: spec.milestoneId || null,
@@ -532,15 +532,27 @@ export async function syncSpecToGit(spec: Spec) {
   });
 }
 
-export async function generateAgentContextForSpec(spec: Spec) {
-  return api<ApiEnvelope<AgentContextDto>>(`/agent/specs/${apiIdForSpec(spec)}/contexts`, {
+export async function generateAgentContextForSpec(spec: Spec, targetAgentId: string = "generic_markdown") {
+  return api<ApiEnvelope<{ markdown: string }>>(`/agent/specs/${apiIdForSpec(spec)}/contexts`, {
     method: "POST",
-    body: JSON.stringify({ targetAgent: "generic" }),
+    body: JSON.stringify({ targetAgent: { id: targetAgentId, label: targetAgentId } }),
   });
 }
 
 export async function getLatestAgentContextForSpec(spec: Spec) {
   return apiOrNull<ApiEnvelope<AgentContextDto>>(`/agent/specs/${apiIdForSpec(spec)}/contexts/latest`);
+}
+
+export async function getAgentTargets() {
+  return api<ApiEnvelope<AgentTargetDto[]>>(`/agent-targets`);
+}
+
+export async function getProjectAgentReadiness(projectId: string) {
+  return api<ApiEnvelope<AgentReadinessCheckDto>>(`/projects/${projectId}/readiness`);
+}
+
+export async function getSpecAgentReadiness(spec: Spec) {
+  return api<ApiEnvelope<AgentReadinessCheckDto>>(`/specs/${apiIdForSpec(spec)}/readiness`);
 }
 
 export async function runSpecCodeCheckForSpec(spec: Spec) {
@@ -551,6 +563,22 @@ export async function runSpecCodeCheckForSpec(spec: Spec) {
 
 export async function getLatestSpecCheckForSpec(spec: Spec) {
   return apiOrNull<ApiEnvelope<SpecCodeCheckDto>>(`/agent/specs/${apiIdForSpec(spec)}/spec-checks/latest`);
+}
+
+export async function getSpecRelatedData(spec: Spec) {
+  const specNumberByApiId = new Map([[apiIdForSpec(spec), spec.id]]);
+  const [comments, decisions, assets, latestCheck] = await Promise.all([
+    api<ApiEnvelope<CommentDto[]>>(`/specs/${apiIdForSpec(spec)}/comments`).then((r) => r.data),
+    api<ApiEnvelope<DecisionDto[]>>(`/specs/${apiIdForSpec(spec)}/decisions`).then((r) => r.data),
+    api<ApiEnvelope<SpecAssetDto[]>>(`/specs/${apiIdForSpec(spec)}/assets`).then((r) => r.data),
+    getLatestSpecCheckForSpec(spec).then((r) => r?.data ?? null),
+  ]);
+  return {
+    comments: comments.map((comment) => mapComment(comment, specNumberByApiId)),
+    decisions: decisions.map((decision) => mapDecision(decision, specNumberByApiId)),
+    assets: assets.map(mapSpecAsset),
+    latestCheck: latestCheck ? mapSpecCheck(latestCheck, specNumberByApiId) : null,
+  };
 }
 
 export async function getSpecAssets(spec: Spec) {

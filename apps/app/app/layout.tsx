@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "SpecPilot - Spec-first workspace for AI-powered teams",
+  title: "SpecGate — Spec-first workspace for AI-powered teams",
   description:
     "Turn messy requests into approved specs, hand clean context to coding agents, and let stakeholders preview before release.",
 };
@@ -10,11 +11,13 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
-}>) {
+  children: any;
+}>): any {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

@@ -12,7 +12,8 @@
     "paths": {
       "@corely/contracts/specgate": ["../../contracts/src/specgate/index.ts"],
       "@corely/kernel": ["../../kernel/src/index.ts"],
-      "@corely/kernel/*": ["../../kernel/src/*"]
+      "@corely/kernel/*": ["../../kernel/src/*"],
+      "@corely/prompts": ["../../prompts/src/index.ts"]
     }
   },
   "include": ["src"]

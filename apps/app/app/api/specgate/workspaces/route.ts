@@ -1,7 +1,7 @@
-import { routeConfig, handleApi } from "@/server/specgateApi";
+import { handleApi } from "@/server/specgateApi";
 
-export const runtime = routeConfig.runtime;
-export const dynamic = routeConfig.dynamic;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 // GET /api/specgate/workspaces — list workspaces for current tenant
 export async function GET(request: Request) {

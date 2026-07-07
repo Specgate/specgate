@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@corely/contracts": "workspace:*",
-    "@corely/kernel": "workspace:*"
+    "@corely/kernel": "workspace:*",
+    "@corely/prompts": "workspace:*",
+    "ai": "catalog:",
+    "@ai-sdk/openai": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

@@ -1,5 +1,5 @@
 {
-  "extends": "@corely/tsconfig/react.json",
+  "extends": "../tooling/tsconfig/react.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

@@ -6,6 +6,8 @@ packages:
 
 catalog:
   '@ai-sdk/anthropic': ^3.0.58
+  '@ai-sdk/deepseek': latest
+  '@ai-sdk/google': latest
   '@ai-sdk/openai': ^3.0.41
   '@ai-sdk/react': ^3.0.118
   '@ai-sdk/ui-utils': ^1.2.11
@@ -13,7 +15,7 @@ catalog:
   '@google-cloud/storage': ^7.18.0
   '@playwright/test': ^1.48.0
   '@prisma/adapter-pg': ^7.2.0
-  '@prisma/client': ^7.2.0
+  '@prisma/client': 7.4.1
   '@tailwindcss/typography': ^0.5.16
   '@tanstack/query-core': ^5.83.0
   '@tanstack/query-persist-client-core': ^5.83.0

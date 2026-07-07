@@ -2071,6 +2071,9 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
       }
     });
   }
+
+  console.log("Seeding engineering context...");
+  await seedEngineeringContext(prisma, "tenant_demo", "project_launchos", "u-ha");
 }
 
 // -------------------------------------------------------------
@@ -2172,4 +2175,54 @@ async function main() {
 const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 if (isMain) {
   main();
+}
+
+async function seedEngineeringContext(prisma: any, tenantId: string, projectId: string, userId: string) {
+  const context = await prisma.specGateEngineeringContext.create({
+    data: {
+      tenantId,
+      projectId,
+      status: "APPROVED",
+      version: 1,
+      projectSummaryMarkdown: "SpecGate is a spec-first workflow for small software teams using coding agents.",
+      architectureMarkdown: "Corely modular monolith.\nNext.js App Router in apps/app.\nBusiness modules in packages/modules.\nContracts in packages/contracts.\nPrisma in packages/data.\nStorage through packages/storage.",
+      codingConventionsMarkdown: "Use TypeScript.\nKeep route handlers thin.\nUse use cases for business logic.\nKeep Prisma behind repository adapters.\nDo not import Next.js into shared modules.\nUse contracts for API boundaries.",
+      testingStrategyMarkdown: "Use Vitest for unit tests.",
+      securityRulesMarkdown: "Ensure tenantId is always filtered.",
+      createdBy: userId,
+      approvedBy: userId,
+      approvedAt: new Date(),
+    }
+  });
+
+  await prisma.specGateProjectValidationCommand.createMany({
+    data: [
+      { tenantId, projectId, contextId: context.id, label: "Install", command: "pnpm install", commandType: "INSTALL", required: true, sortOrder: 1 },
+      { tenantId, projectId, contextId: context.id, label: "Typecheck", command: "pnpm tsc --noEmit", commandType: "TYPECHECK", required: true, sortOrder: 2 },
+      { tenantId, projectId, contextId: context.id, label: "Lint", command: "pnpm lint", commandType: "LINT", required: true, sortOrder: 3 },
+      { tenantId, projectId, contextId: context.id, label: "Test", command: "pnpm test", commandType: "TEST", required: true, sortOrder: 4 },
+      { tenantId, projectId, contextId: context.id, label: "Build", command: "pnpm build", commandType: "BUILD", required: true, sortOrder: 5 },
+    ]
+  });
+
+  await prisma.specGateProjectAdr.createMany({
+    data: [
+      { tenantId, projectId, contextId: context.id, number: 1, title: "Use Corely modular monolith", status: "ACCEPTED", contextMarkdown: "We need a modular architecture.", decisionMarkdown: "Use Corely modular monolith.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, number: 2, title: "Use Engineering Context as project-level source of truth for agent behavior", status: "ACCEPTED", contextMarkdown: "Agents need context.", decisionMarkdown: "Use Engineering Context.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, number: 3, title: "Use AGENTS.md as canonical cross-agent export", status: "ACCEPTED", contextMarkdown: "Many agents.", decisionMarkdown: "Use AGENTS.md.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, number: 4, title: "Use fake export/sync adapters for MVP", status: "ACCEPTED", contextMarkdown: "MVP constraints.", decisionMarkdown: "Fake sync.", createdBy: userId },
+    ]
+  });
+
+  await prisma.specGateProjectContextRule.createMany({
+    data: [
+      { tenantId, projectId, contextId: context.id, title: "Architecture Boundary Rules", category: "ARCHITECTURE", scopeType: "GLOBAL", severity: "REQUIRED", contentMarkdown: "Do not import Next.js into shared modules.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, title: "Backend Module Rules", category: "BACKEND", scopeType: "PATH", pathGlob: "packages/modules/**/*.ts", severity: "REQUIRED", contentMarkdown: "Use use cases for business logic.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, title: "Frontend UI Rules", category: "FRONTEND", scopeType: "PATH", pathGlob: "apps/app/**/*.tsx", severity: "REQUIRED", contentMarkdown: "Keep route handlers thin.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, title: "Prisma/Data Access Rules", category: "DATABASE", scopeType: "GLOBAL", severity: "REQUIRED", contentMarkdown: "Keep Prisma behind repository adapters.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, title: "Testing Rules", category: "TESTING", scopeType: "GLOBAL", severity: "REQUIRED", contentMarkdown: "Use Vitest.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, title: "Security Rules", category: "SECURITY", scopeType: "GLOBAL", severity: "REQUIRED", contentMarkdown: "Ensure tenantId is checked.", createdBy: userId },
+      { tenantId, projectId, contextId: context.id, title: "Agent Behavior Rules", category: "AGENT", scopeType: "GLOBAL", severity: "REQUIRED", contentMarkdown: "Do not mark done until preview accepted.", createdBy: userId },
+    ]
+  });
 }

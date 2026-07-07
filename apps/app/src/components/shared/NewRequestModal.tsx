@@ -20,12 +20,12 @@ import {
 } from "@corely/ui";
 import { useSpecGateStore, nextRequestId } from "@/lib/specgate-store";
 import { toast } from "sonner";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import type { Priority, RoadmapLane } from "@/types/specgate";
 
-export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }): any {
   const { state, addSpec } = useSpecGateStore();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [why, setWhy] = useState("");
   const [who, setWho] = useState("");
@@ -53,7 +53,8 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
         milestoneId,
         ownerId: "u-ha",
         summary: title,
-        problem: why,
+        background: why,
+        desiredOutcome: title,
         acceptanceCriteria: [],
         outOfScope: [],
         openQuestions: [
@@ -67,7 +68,7 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
       toast.success("Request created. AI has generated clarification questions.");
       onOpenChange(false);
       setTitle(""); setWhy(""); setWho("");
-      navigate({ to: "/specs/$id", params: { id: created.id } });
+      router.push(`/specs/${created.id}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not create request.");
     }

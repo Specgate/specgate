@@ -4,6 +4,7 @@ import type {
   DecisionDto,
   ProjectDto,
   SpecAssetDto,
+  SpecCheckSummaryDto,
   SpecDto,
   SpecVersionDto,
 } from "@corely/contracts/specgate";
@@ -12,6 +13,7 @@ import type {
   DecisionRecord,
   ProjectRecord,
   SpecAssetRecord,
+  SpecCodeCheckSummaryRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../domain/entities/spec";
@@ -52,12 +54,20 @@ export function mapApprovedSnapshot(row: SpecRecord): ApprovedSpecSnapshot {
     status: dto.status,
     priority: dto.priority,
     roadmapLane: dto.roadmapLane,
+    assigneeId: dto.assigneeId,
     acceptanceCriteria: dto.acceptanceCriteria,
     outOfScope: dto.outOfScope,
     openQuestions: dto.openQuestions,
     relatedFiles: dto.relatedFiles,
     technicalNotes: dto.technicalNotes,
     uiNotes: dto.uiNotes,
+    background: dto.background,
+    currentBehavior: dto.currentBehavior,
+    desiredOutcome: dto.desiredOutcome,
+    edgeCases: dto.edgeCases,
+    securityNotes: dto.securityNotes,
+    suggestedSearchTerms: dto.suggestedSearchTerms,
+    verificationPlan: dto.verificationPlan,
     approvedBy: dto.approvedBy,
     approvedAt: dto.approvedAt,
   };
@@ -90,5 +100,14 @@ export function mapSpecAsset(
     signedUrl: urls?.signedUrl ?? null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export function mapSpecCheckSummary(
+  row: SpecCodeCheckSummaryRecord,
+): SpecCheckSummaryDto {
+  return {
+    ...row,
+    createdAt: row.createdAt.toISOString(),
   };
 }

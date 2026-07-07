@@ -3,6 +3,7 @@ import type {
   DecisionRecord,
   ProjectRecord,
   SpecAssetRecord,
+  SpecCodeCheckSummaryRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../../domain/entities/spec";
@@ -81,6 +82,27 @@ export interface SpecsRepositoryPort {
     patch: Partial<SpecAssetRecord>,
   ): Promise<SpecAssetRecord | null>;
   deleteSpecAsset(tenantId: string, assetId: string): Promise<void>;
+
+  countCommentsBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, number>>;
+  countDecisionsBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, number>>;
+  countAssetsBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, number>>;
+  findLatestChecksBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, SpecCodeCheckSummaryRecord>>;
+  findLatestActivityAtBySpecIds(
+    tenantId: string,
+    specIds: string[],
+  ): Promise<Map<string, Date>>;
 }
 
 export interface ActivityPublisherPort {

@@ -9,8 +9,6 @@ export type { InvoiceEmailProps } from "./invoices/index";
 export { PasswordResetEmail, buildPasswordResetEmailSubject } from "./password-reset/index";
 export type { PasswordResetEmailProps } from "./password-reset/index";
 
-// Re-export leads module
-export { LeadConfirmationEmail, buildLeadConfirmationEmailSubject } from "./leads/index";
 
 // Re-export portal OTP module
 export { PortalOtpEmail, buildPortalOtpEmailSubject } from "./portal-otp/index";

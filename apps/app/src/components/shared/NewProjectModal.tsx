@@ -7,10 +7,10 @@ import { toast } from "sonner";
 import { createProject } from "@/lib/specgate-api";
 import { useSpecGateStore } from "@/lib/specgate-store";
 
-export function NewProjectModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function NewProjectModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }): any {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { state, setProject, refresh } = useSpecGateStore();
+  const { state, setProject } = useSpecGateStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +19,6 @@ export function NewProjectModal({ open, onOpenChange }: { open: boolean; onOpenC
     setLoading(true);
     try {
       const project = await createProject(name.trim(), state.currentWorkspaceId);
-      await refresh(); // Refresh to get the new project in the list
       await setProject(project.id);
       toast.success(`Project "${project.name}" created successfully`);
       setTimeout(() => onOpenChange(false), 0);

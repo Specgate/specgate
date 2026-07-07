@@ -9,11 +9,25 @@ import {
   mapSpecCodeCheck,
 } from "../mappers";
 import { generateSpecMarkdown } from "../services/spec-markdown-export.service";
+// EngineeringContextUseCases is injected via optional dependency - define a minimal interface
+export interface EngineeringContextUseCases {
+  generateSpecAgentContext: {
+    execute(
+      tenantId: string,
+      userId: string,
+      projectId: string,
+      specId: string,
+      targetAgentId: string | undefined,
+      specDetails: Record<string, unknown>
+    ): Promise<{ markdown: string }>;
+  };
+}
 
 export class AgentUseCases {
   constructor(
     private readonly repository: AgentRepositoryPort,
     private readonly specs: SpecsUseCases,
+    private readonly engineeringContext?: EngineeringContextUseCases,
   ) {}
 
   async generateAgentContext(
@@ -22,7 +36,19 @@ export class AgentUseCases {
     targetAgent: AgentTarget,
   ) {
     const snapshot = await this.specs.getApprovedSpecSnapshot(ctx, specId);
-    const markdown = generateSpecMarkdown(snapshot);
+    let markdown = generateSpecMarkdown(snapshot);
+    
+    if (this.engineeringContext) {
+      const res = await this.engineeringContext.generateSpecAgentContext.execute(
+        ctx.tenantId,
+        ctx.userId,
+        snapshot.projectId,
+        specId,
+        targetAgent, // AgentTarget is a string enum value
+        snapshot
+      );
+      markdown = res.markdown;
+    }
     const record = {
       id: randomUUID(),
       tenantId: ctx.tenantId,

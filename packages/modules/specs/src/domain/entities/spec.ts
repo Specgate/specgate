@@ -23,10 +23,17 @@ export type SpecRecord = {
   acceptedBy: string | null;
   acceptedAt: Date | null;
   doneAt: Date | null;
+  background: string | null;
+  currentBehavior: string | null;
+  desiredOutcome: string | null;
   acceptanceCriteria: string[];
   outOfScope: string[];
   openQuestions: string[];
   relatedFiles: string[];
+  edgeCases: string[];
+  securityNotes: string | null;
+  suggestedSearchTerms: string[];
+  verificationPlan: string[];
   technicalNotes: string | null;
   uiNotes: string | null;
   createdBy: string;
@@ -103,4 +110,15 @@ export type SpecAssetRecord = {
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type SpecCodeCheckSummaryRecord = {
+  id: string;
+  tenantId: string;
+  projectId: string;
+  specId: string;
+  status: string;
+  summary: string;
+  createdBy: string;
+  createdAt: Date;
 };

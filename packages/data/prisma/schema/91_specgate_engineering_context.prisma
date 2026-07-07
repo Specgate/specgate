@@ -1,0 +1,211 @@
+model SpecGateEngineeringContext {
+  id                         String   @id @default(cuid())
+  tenantId                   String
+  projectId                  String
+
+  status                     SpecGateEngineeringContextStatus @default(DRAFT)
+  version                    Int      @default(1)
+
+  projectSummaryMarkdown     String?
+  architectureMarkdown       String?
+  codingConventionsMarkdown  String?
+  testingStrategyMarkdown    String?
+  securityRulesMarkdown      String?
+  validationNotesMarkdown    String?
+
+  approvedAt                 DateTime? @db.Timestamptz(6)
+  approvedBy                 String?
+
+  createdBy                  String
+  updatedBy                  String?
+  createdAt                  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime @updatedAt @db.Timestamptz(6)
+
+  rules                      SpecGateProjectContextRule[]
+  adrs                       SpecGateProjectAdr[]
+  validationCommands         SpecGateProjectValidationCommand[]
+  agentExports               SpecGateProjectAgentExport[]
+
+  project                    SpecGateProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@index([tenantId, status])
+  @@map("specgate_engineering_contexts")
+}
+
+enum SpecGateEngineeringContextStatus {
+  DRAFT
+  APPROVED
+  STALE
+  ARCHIVED
+}
+
+model SpecGateProjectContextRule {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  contextId       String
+
+  title           String
+  category        SpecGateContextRuleCategory
+  scopeType       SpecGateContextRuleScopeType @default(GLOBAL)
+  pathGlob        String?
+  moduleName      String?
+  severity        SpecGateContextRuleSeverity @default(GUIDANCE)
+
+  contentMarkdown String
+  enabled         Boolean @default(true)
+  sortOrder       Int     @default(0)
+
+  targetAgentIds  String[] 
+
+  createdBy       String
+  updatedBy       String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  context         SpecGateEngineeringContext @relation(fields: [contextId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@index([tenantId, contextId])
+  @@index([tenantId, category])
+  @@map("specgate_project_context_rules")
+}
+
+enum SpecGateContextRuleCategory {
+  ARCHITECTURE
+  FRONTEND
+  BACKEND
+  DATABASE
+  API
+  STORAGE
+  AUTH
+  TESTING
+  SECURITY
+  UI
+  AGENT
+  RELEASE
+  DOCUMENTATION
+  OTHER
+}
+
+enum SpecGateContextRuleScopeType {
+  GLOBAL
+  PATH
+  MODULE
+  SPEC_AREA
+}
+
+enum SpecGateContextRuleSeverity {
+  GUIDANCE
+  REQUIRED
+  BLOCKED
+}
+
+model SpecGateProjectAdr {
+  id                    String   @id @default(cuid())
+  tenantId              String
+  projectId             String
+  contextId             String
+
+  number                Int
+  title                 String
+  status                SpecGateAdrStatus @default(PROPOSED)
+
+  contextMarkdown        String
+  decisionMarkdown       String
+  alternativesMarkdown   String?
+  consequencesMarkdown   String?
+
+  supersedesAdrId        String?
+  createdBy             String
+  updatedBy             String?
+  decidedAt             DateTime? @db.Timestamptz(6)
+  createdAt             DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @db.Timestamptz(6)
+
+  context               SpecGateEngineeringContext @relation(fields: [contextId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, projectId, number])
+  @@index([tenantId, projectId])
+  @@index([tenantId, status])
+  @@map("specgate_project_adrs")
+}
+
+enum SpecGateAdrStatus {
+  PROPOSED
+  ACCEPTED
+  SUPERSEDED
+  REJECTED
+}
+
+model SpecGateProjectValidationCommand {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  contextId       String
+
+  label           String
+  command         String
+  commandType     SpecGateValidationCommandType
+  required        Boolean @default(true)
+  sortOrder       Int     @default(0)
+
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  context         SpecGateEngineeringContext @relation(fields: [contextId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@index([tenantId, contextId])
+  @@map("specgate_project_validation_commands")
+}
+
+enum SpecGateValidationCommandType {
+  INSTALL
+  DEV
+  LINT
+  TYPECHECK
+  TEST
+  BUILD
+  E2E
+  DB_MIGRATION
+  SEED
+  CUSTOM
+}
+
+model SpecGateProjectAgentExport {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  contextId       String
+
+  targetAgentId   String
+  exportKind      SpecGateAgentExportKind
+
+  filePath        String
+  contentMarkdown String
+  checksum        String
+
+  generatedAt     DateTime @default(now()) @db.Timestamptz(6)
+  copiedAt        DateTime? @db.Timestamptz(6)
+  syncedAt        DateTime? @db.Timestamptz(6)
+
+  createdBy       String
+
+  context         SpecGateEngineeringContext @relation(fields: [contextId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@index([tenantId, targetAgentId])
+  @@unique([tenantId, projectId, targetAgentId, filePath])
+  @@map("specgate_project_agent_exports")
+}
+
+enum SpecGateAgentExportKind {
+  CANONICAL
+  TOOL_SPECIFIC
+  RULE
+  WORKFLOW
+  SKILL
+  TASK_CONTEXT
+}

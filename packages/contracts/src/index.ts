@@ -3,28 +3,9 @@ import { CustomValuesSchema } from "./common/customization/custom-field";
 import { ListQuerySchema, PageInfoSchema } from "./common/list.contract";
 export * from "./common/list.contract";
 export * from "./documents";
-export * from "./invoices";
-export * from "./customers";
 export * from "./workspaces";
 export * from "./shared/local-date.schema";
-export * from "./expenses";
 export * from "./forms";
-export * from "./tax";
-export * from "./accounting";
-export * from "./reporting";
-export * from "./crm";
-export * from "./cms";
-export * from "./website";
-export * from "./sales";
-export * from "./rentals";
-export * from "./classes";
-export {
-  RecordPaymentInputSchema as SalesRecordPaymentInputSchema,
-  RecordPaymentOutputSchema as SalesRecordPaymentOutputSchema,
-  type RecordPaymentInput as SalesRecordPaymentInput,
-  type RecordPaymentOutput as SalesRecordPaymentOutput,
-} from "./sales/record-payment.schema";
-// Payment Methods exports (aliased as PaymentMethodConfig to avoid conflict with Sales PaymentMethod enum)
 export {
   PaymentMethodTypeEnum,
   PaymentMethodSchema as PaymentMethodConfigSchema,
@@ -38,11 +19,8 @@ export {
   ListPaymentMethodsOutputSchema,
 } from "./payment-methods";
 
-// Export both aliased and unaliased types
 export type {
-  // Aliased for frontend (to avoid conflict with Sales PaymentMethod)
   PaymentMethod as PaymentMethodConfig,
-  // Unaliased for backend use
   PaymentMethod,
   PaymentMethodSnapshot,
   CreatePaymentMethodInput,
@@ -54,46 +32,8 @@ export type {
   ListBankAccountsOutput,
   ListPaymentMethodsOutput,
 } from "./payment-methods";
-export * from "./sales-ai";
-export * from "./purchasing";
-export * from "./purchasing-ai";
-export * from "./inventory";
-export * from "./inventory-ai";
+
 export * from "./import";
-export * from "./catalog";
-export * from "./portfolio";
-export * from "./issues";
-// POS exports (aliased to avoid clashing with Sales PaymentMethod)
-export {
-  PaymentMethod as PosPaymentMethod,
-  PaymentMethodSchema as PosPaymentMethodSchema,
-  PosSaleLineItemSchema,
-  type PosSaleLineItem,
-  PosSalePaymentSchema,
-  type PosSalePayment,
-  PosSaleStatus,
-  PosSaleStatusSchema,
-  PosSaleSchema,
-  type PosSale,
-  PosTicketLineItemSchema,
-  type PosTicketLineItem,
-  PosTicketStatus,
-  PosTicketStatusSchema,
-  PosTicketSchema,
-  type PosTicket,
-} from "./pos/pos-sale.types";
-export * from "./pos/register.types";
-export * from "./pos/shift-session.types";
-export * from "./pos/create-register.schema";
-export * from "./pos/list-registers.schema";
-export * from "./pos/open-shift.schema";
-export * from "./pos/close-shift.schema";
-export * from "./pos/get-current-shift.schema";
-export * from "./pos/sync-pos-sale.schema";
-export * from "./pos/get-catalog-snapshot.schema";
-export * from "./pos-ai";
-export * from "./engagement";
-export * from "./engagement-ai";
 export * from "./workflows";
 export * from "./approvals";
 export * from "./identity";
@@ -104,21 +44,9 @@ export * from "./integrations";
 export * from "./copilot/collect-inputs.schema";
 export * from "./copilot/chat.schema";
 export * from "./copilot/chat-history.schema";
-export * from "./cash-management";
 export * from "./todos";
 export * from "./specgate";
 export * from "./ai/richtext";
-
-export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
-
-// Legacy helpers used by domain utils
-import type { CurrencyCode } from "./money/currency.schema";
-export * from "./money/currency.schema";
-
-// Legacy helpers used by domain utils
-export type Currency = CurrencyCode;
-
-export type Locale = "de-DE" | "en-US";
 export type ExpenseCategory = "Office" | "Meals" | "Travel" | "Software" | "Other";
 export interface Receipt {
   id: string;
@@ -126,7 +54,7 @@ export interface Receipt {
   issuedAtISO: string;
   totalCents: number;
   vatRate: number;
-  currency: CurrencyCode;
+  currency: string;
   category?: ExpenseCategory;
 }
 export const mockReceipts: Receipt[] = [];

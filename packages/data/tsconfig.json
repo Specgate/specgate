@@ -1,5 +1,5 @@
 {
-  "extends": "@corely/tsconfig/lib.json",
+  "extends": "../tooling/tsconfig/lib.json",
   "compilerOptions": {
     "types": ["node"],
     "composite": false,

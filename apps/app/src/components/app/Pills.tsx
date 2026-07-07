@@ -44,7 +44,7 @@ const colors: Record<SpecStatus, string> = {
   done: "bg-neutral-500/15 text-neutral-300 border-neutral-500/30",
 };
 
-export function StatusPill({ status, className }: { status: SpecStatus; className?: string }) {
+export function StatusPill({ status, className }: { status: SpecStatus; className?: string }): any {
   const { state } = useSpecGateStore();
   const label = state.mode === "solo" ? soloLabels[status] : teamLabels[status];
   return (
@@ -67,7 +67,7 @@ const pColors: Record<Priority, string> = {
   urgent: "bg-rose-500/15 text-rose-300 border-rose-500/30",
 };
 
-export function PriorityPill({ priority, className }: { priority: Priority; className?: string }) {
+export function PriorityPill({ priority, className }: { priority: Priority; className?: string }): any {
   return (
     <span
       className={cn(
@@ -81,7 +81,7 @@ export function PriorityPill({ priority, className }: { priority: Priority; clas
   );
 }
 
-export function UserAvatar({ name, size = 24 }: { name: string; size?: number }) {
+export function UserAvatar({ name, size = 24 }: { name: string; size?: number }): any {
   return (
     <span
       className="inline-flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-indigo-500 text-[11px] font-semibold text-white"

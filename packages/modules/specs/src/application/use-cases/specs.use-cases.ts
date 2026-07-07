@@ -10,6 +10,7 @@ import type {
   SpecDto,
   SpecInput,
   SpecListQuery,
+  SpecListSummaryDto,
   SpecUpdate,
   SpecStatus,
 } from "@corely/contracts/specgate";
@@ -30,6 +31,7 @@ import {
   mapDecision,
   mapProject,
   mapSpecAsset,
+  mapSpecCheckSummary,
   mapSpec,
 } from "../mappers";
 import { WorkflowService } from "../services/spec-workflow.service";
@@ -119,6 +121,46 @@ export class SpecsUseCases {
     };
   }
 
+  async listSpecSummaries(
+    ctx: RequestContext,
+    query: SpecListQuery,
+  ): Promise<{ data: SpecListSummaryDto[] }> {
+    const specs = await this.repository.listSpecs(ctx.tenantId, query);
+    const specIds = specs.map((spec) => spec.id);
+    const [
+      commentCounts,
+      decisionCounts,
+      assetCounts,
+      latestChecks,
+      latestActivity,
+    ] = await Promise.all([
+      this.repository.countCommentsBySpecIds(ctx.tenantId, specIds),
+      this.repository.countDecisionsBySpecIds(ctx.tenantId, specIds),
+      this.repository.countAssetsBySpecIds(ctx.tenantId, specIds),
+      this.repository.findLatestChecksBySpecIds(ctx.tenantId, specIds),
+      this.repository.findLatestActivityAtBySpecIds(ctx.tenantId, specIds),
+    ]);
+
+    return {
+      data: specs.map((spec) => {
+        const latestCheck = latestChecks.get(spec.id) ?? null;
+        const relatedActivityAt = latestActivity.get(spec.id);
+        const latestActivityAt =
+          relatedActivityAt && relatedActivityAt > spec.updatedAt
+            ? relatedActivityAt
+            : spec.updatedAt;
+        return {
+          spec: mapSpec(spec),
+          commentCount: commentCounts.get(spec.id) ?? 0,
+          decisionCount: decisionCounts.get(spec.id) ?? 0,
+          assetCount: assetCounts.get(spec.id) ?? 0,
+          latestCheck: latestCheck ? mapSpecCheckSummary(latestCheck) : null,
+          latestActivityAt: latestActivityAt.toISOString(),
+        };
+      }),
+    };
+  }
+
   async getSpecDetail(
     ctx: RequestContext,
     specId: string,
@@ -158,6 +200,13 @@ export class SpecsUseCases {
       acceptedBy: null,
       acceptedAt: null,
       doneAt: null,
+      background: null,
+      currentBehavior: null,
+      desiredOutcome: null,
+      edgeCases: [],
+      securityNotes: null,
+      suggestedSearchTerms: [],
+      verificationPlan: [],
       acceptanceCriteria: input.acceptanceCriteria || [],
       outOfScope: input.outOfScope || [],
       openQuestions: input.openQuestions || [],

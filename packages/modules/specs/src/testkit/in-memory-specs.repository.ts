@@ -4,6 +4,7 @@ import type {
   DecisionRecord,
   ProjectRecord,
   SpecAssetRecord,
+  SpecCodeCheckSummaryRecord,
   SpecRecord,
   SpecVersionRecord,
 } from "../domain/entities/spec";
@@ -19,6 +20,7 @@ export class InMemorySpecsRepository implements SpecsRepositoryPort {
   comments = new Map<string, CommentRecord>();
   decisions = new Map<string, DecisionRecord>();
   assets = new Map<string, SpecAssetRecord>();
+  specChecks = new Map<string, SpecCodeCheckSummaryRecord>();
 
   async listProjects(tenantId: string) {
     return [...this.projects.values()].filter(
@@ -178,5 +180,63 @@ export class InMemorySpecsRepository implements SpecsRepositoryPort {
   async deleteSpecAsset(tenantId: string, assetId: string) {
     const asset = await this.findSpecAsset(tenantId, assetId);
     if (asset) this.assets.delete(assetId);
+  }
+
+  async countCommentsBySpecIds(tenantId: string, specIds: string[]) {
+    return this.countBySpecIds(this.comments, tenantId, specIds);
+  }
+
+  async countDecisionsBySpecIds(tenantId: string, specIds: string[]) {
+    return this.countBySpecIds(this.decisions, tenantId, specIds);
+  }
+
+  async countAssetsBySpecIds(tenantId: string, specIds: string[]) {
+    return this.countBySpecIds(this.assets, tenantId, specIds);
+  }
+
+  async findLatestChecksBySpecIds(tenantId: string, specIds: string[]) {
+    const allowed = new Set(specIds);
+    const latest = new Map<string, SpecCodeCheckSummaryRecord>();
+    for (const check of this.specChecks.values()) {
+      if (check.tenantId !== tenantId || !allowed.has(check.specId)) continue;
+      const current = latest.get(check.specId);
+      if (!current || check.createdAt > current.createdAt) {
+        latest.set(check.specId, check);
+      }
+    }
+    return latest;
+  }
+
+  async findLatestActivityAtBySpecIds(tenantId: string, specIds: string[]) {
+    const latest = new Map<string, Date>();
+    const update = (specId: string, date: Date) => {
+      const current = latest.get(specId);
+      if (!current || date > current) latest.set(specId, date);
+    };
+    const allowed = new Set(specIds);
+    for (const item of [
+      ...this.comments.values(),
+      ...this.decisions.values(),
+      ...this.assets.values(),
+      ...this.specChecks.values(),
+    ]) {
+      if (item.tenantId !== tenantId || !allowed.has(item.specId)) continue;
+      update(item.specId, item.createdAt);
+    }
+    return latest;
+  }
+
+  private countBySpecIds<T extends { tenantId: string; specId: string }>(
+    rows: Map<string, T>,
+    tenantId: string,
+    specIds: string[],
+  ) {
+    const allowed = new Set(specIds);
+    const counts = new Map<string, number>();
+    for (const row of rows.values()) {
+      if (row.tenantId !== tenantId || !allowed.has(row.specId)) continue;
+      counts.set(row.specId, (counts.get(row.specId) ?? 0) + 1);
+    }
+    return counts;
   }
 }

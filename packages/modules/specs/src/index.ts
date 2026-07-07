@@ -6,3 +6,4 @@ export * from "./application/services/spec-markdown.service";
 export * from "./application/use-cases/specs.use-cases";
 export * from "./infrastructure/prisma/prisma-specs.repository";
 export * from "./testkit/in-memory-specs.repository";
+export * from './application/use-cases/spec-copilot.usecase';

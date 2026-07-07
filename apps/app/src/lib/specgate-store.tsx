@@ -1,9 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import type { DemoState, Spec, SpecStatus, Comment, Activity, DemoMode, RoadmapLane } from "@/types/specgate";
 import { initialState } from "./reference-data";
 import {
   addSpecComment,
   createSpec,
+  getSpecRelatedData,
   loadWorkspaceState,
   moveSpecLane,
   resetAndSeedDemo,
@@ -21,6 +22,7 @@ interface SpecGateStoreContext {
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  loadSpecDetails: (id: string) => Promise<void>;
   setMode: (mode: DemoMode) => void;
   setWorkspace: (id: string) => Promise<void>;
   setProject: (id: string) => Promise<void>;
@@ -58,7 +60,7 @@ function loadWorkspaceId(): string | undefined {
   return undefined;
 }
 
-export function SpecGateStoreProvider({ children }: { children: ReactNode }) {
+export function SpecGateStoreProvider({ children }: { children: any }): any {
   const [state, setState] = useState<DemoState>(initialState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +100,46 @@ export function SpecGateStoreProvider({ children }: { children: ReactNode }) {
     loading,
     error,
     refresh: () => refresh(),
+    loadSpecDetails: async (id) => {
+      const spec = findSpec(id);
+      const related = await getSpecRelatedData(spec);
+      setState((s) => ({
+        ...s,
+        comments: [
+          ...s.comments.filter((comment) => comment.specId !== id),
+          ...related.comments,
+        ],
+        decisions: [
+          ...s.decisions.filter((decision) => decision.specId !== id),
+          ...related.decisions,
+        ],
+        assets: [
+          ...s.assets.filter((asset) => asset.specId !== id),
+          ...related.assets,
+        ],
+        specChecks: related.latestCheck
+          ? [
+              ...s.specChecks.filter((check) => check.specId !== id),
+              related.latestCheck,
+            ]
+          : s.specChecks.filter((check) => check.specId !== id),
+        specs: s.specs.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                commentCount: related.comments.length,
+                decisionCount: related.decisions.length,
+                assetCount: related.assets.length,
+                latestSpecCheck: related.latestCheck,
+                warning:
+                  related.latestCheck && related.latestCheck.status !== "passed"
+                    ? related.latestCheck.summary
+                    : undefined,
+              }
+            : item,
+        ),
+      }));
+    },
     setMode: (mode) => {
       try {
         localStorage.setItem(MODE_STORAGE_KEY, mode);

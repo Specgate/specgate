@@ -1,5 +1,5 @@
 {
-  "extends": "@corely/tsconfig/react.json",
+  "extends": "../../packages/tooling/tsconfig/react.json",
   "compilerOptions": {
     "target": "ES2022",
     "lib": [
