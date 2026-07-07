@@ -16,9 +16,20 @@ export const IdSchema = z.string().min(1);
 export const IsoDateSchema = z.string();
 export const StringArraySchema = z.array(z.string()).default([]);
 
+export const WorkspaceSchema = z.object({
+  id: IdSchema,
+  tenantId: z.string(),
+  name: z.string(),
+  slug: z.string().nullable(),
+  createdAt: IsoDateSchema,
+  updatedAt: IsoDateSchema,
+});
+export type WorkspaceDto = z.infer<typeof WorkspaceSchema>;
+
 export const ProjectSchema = z.object({
   id: IdSchema,
   tenantId: z.string(),
+  workspaceId: z.string().nullable(),
   name: z.string(),
   slug: z.string(),
   description: z.string().nullable(),
@@ -295,6 +306,7 @@ export type ActivityDto = z.infer<typeof ActivitySchema>;
 export const ProjectInputSchema = z.object({
   name: z.string().min(1),
   slug: z.string().min(1).optional(),
+  workspaceId: z.string().optional().nullable(),
   description: z.string().optional().nullable(),
   gitProvider: z.string().optional().nullable(),
   gitRepoUrl: z.string().optional().nullable(),

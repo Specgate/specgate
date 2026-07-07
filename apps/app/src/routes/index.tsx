@@ -23,14 +23,14 @@ import {
   Code2,
   ShieldCheck,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@corely/ui";
 import { toast } from "sonner";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@corely/ui";
 
 export const Route = createFileRoute("/")({
   head: () => ({

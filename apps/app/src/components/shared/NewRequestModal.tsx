@@ -6,18 +6,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Label } from "@corely/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@corely/ui";
 import { useSpecGateStore, nextRequestId } from "@/lib/specgate-store";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";

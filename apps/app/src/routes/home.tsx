@@ -3,7 +3,7 @@ import { AppShell, PageHeader } from "@/components/app/AppShell";
 import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill, PriorityPill } from "@/components/app/Pills";
 import { AlertTriangle, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@corely/ui";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/home")({

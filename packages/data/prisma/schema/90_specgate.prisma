@@ -1,6 +1,7 @@
 model SpecGateProject {
   id               String   @id @default(cuid())
   tenantId         String
+  workspaceId      String?
   name             String
   slug             String
   description      String?
@@ -13,10 +14,12 @@ model SpecGateProject {
   createdAt        DateTime @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime @updatedAt @db.Timestamptz(6)
 
-  specs SpecGateSpec[]
+  workspace Workspace?       @relation(fields: [workspaceId], references: [id])
+  specs     SpecGateSpec[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
+  @@index([workspaceId])
   @@map("specgate_projects")
 }
 
@@ -25,17 +28,21 @@ model SpecGateSpec {
   tenantId               String
   projectId              String
   specNumber             String
-  title                  String
-  slug                   String
-  summary                String?
-  audience               String?
-  description            String?
-  status                 String
-  priority               String
-  roadmapLane            String
-  targetMilestoneId      String?
-  buildCycleId           String?
-  ownerId                String?
+  title                    String
+  slug                     String
+  type                     String    @default("feature")
+  summary                  String?
+  audience                 String?
+  description              String?
+  status                   String
+  priority                 String
+  agentReadiness           String    @default("needs_clarification")
+  roadmapLane              String
+  targetMilestoneId        String?
+  buildCycleId             String?
+  ownerId                  String?
+  requiresCodeChanges      String    @default("unknown")
+  riskLevel                String    @default("medium")
   assigneeId             String?
   approvedVersionId      String?
   approvedBy             String?
@@ -45,8 +52,11 @@ model SpecGateSpec {
   doneAt                 DateTime? @db.Timestamptz(6)
   acceptanceCriteriaJson Json?
   outOfScopeJson         Json?
-  openQuestionsJson      Json?
-  relatedFilesJson       Json?
+  openQuestionsJson        Json?
+  relatedFilesJson         Json?
+  agentTargetsJson         Json?
+  suggestedSearchTermsJson Json?
+  verificationPlanJson     Json?
   technicalNotes         String?
   uiNotes                String?
   createdBy              String

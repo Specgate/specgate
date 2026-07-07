@@ -17,7 +17,7 @@ export type ProjectPatch = Partial<Omit<ProjectInput, "slug">> & {
 };
 
 export interface SpecsRepositoryPort {
-  listProjects(tenantId: string): Promise<ProjectRecord[]>;
+  listProjects(tenantId: string, workspaceId?: string): Promise<ProjectRecord[]>;
   findProject(
     tenantId: string,
     projectId: string,

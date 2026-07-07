@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
 import { useSpecGateStore } from "@/lib/specgate-store";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Button } from "@corely/ui";
+import { Progress } from "@corely/ui";
 import { CalendarRange, Sparkles, CheckCircle2, AlertTriangle } from "lucide-react";
 import { StatusPill } from "@/components/app/Pills";
 import { useState } from "react";
@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@corely/ui";
 import { summarizeBuildCycle } from "@/lib/specgate-api";
 
 export const Route = createFileRoute("/build-cycles")({

@@ -2,10 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
 import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill } from "@/components/app/Pills";
-import { Button } from "@/components/ui/button";
+import { Button } from "@corely/ui";
 import { ExternalLink, GitPullRequest, Rocket, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@corely/ui";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/done")({

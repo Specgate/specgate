@@ -14,19 +14,22 @@ import {
   Sparkles,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { cn } from "@corely/ui/utils";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+  SelectSeparator,
+} from "@corely/ui";
 import { useSpecGateStore } from "@/lib/specgate-store";
 import { toast } from "sonner";
 import { NewRequestModal } from "@/components/shared/NewRequestModal";
+import { NewProjectModal } from "@/components/shared/NewProjectModal";
+import { NewWorkspaceModal } from "@/components/shared/NewWorkspaceModal";
 
 const nav = [
   { to: "/home", label: "Home", icon: Home },
@@ -41,10 +44,14 @@ const nav = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { state, loading, error, refresh, setMode, setProject } = useSpecGateStore();
-  const [newOpen, setNewOpen] = useState(false);
+  const { state, loading, error, refresh, setMode, setWorkspace, setProject } = useSpecGateStore();
+  const [newRequestOpen, setNewRequestOpen] = useState(false);
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
+  const [newWorkspaceOpen, setNewWorkspaceOpen] = useState(false);
   const navigate = useNavigate();
-  const projects = state.projects;
+  const workspaces = state.workspaces;
+  const workspaceName = workspaces.find((w) => w.id === state.currentWorkspaceId)?.name ?? "Acme Corp";
+  const projects = state.projects.filter((p) => p.workspaceId === state.currentWorkspaceId);
   const projectName = projects.find((p) => p.id === state.currentProjectId)?.name ?? "LaunchOS";
 
   return (
@@ -103,8 +110,43 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="hidden md:flex items-center gap-2">
             <Select
+              value={state.currentWorkspaceId}
+              onValueChange={(v) => {
+                if (v === "new_workspace") {
+                  setTimeout(() => setNewWorkspaceOpen(true), 0);
+                  return;
+                }
+                void setWorkspace(v).then(() => {
+                  toast.success(`Switched to ${workspaces.find((w) => w.id === v)?.name ?? "workspace"}.`);
+                });
+              }}
+            >
+              <SelectTrigger className="h-8 w-40 bg-card border-border font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {workspaces.map((w) => (
+                  <SelectItem key={w.id} value={w.id}>
+                    {w.name}
+                  </SelectItem>
+                ))}
+                <SelectSeparator />
+                <SelectItem value="new_workspace" className="font-medium text-primary">
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    <span>New Workspace</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-muted-foreground">/</span>
+            <Select
               value={state.currentProjectId}
               onValueChange={(v) => {
+                if (v === "new_project") {
+                  setTimeout(() => setNewProjectOpen(true), 0);
+                  return;
+                }
                 void setProject(v).then(() => {
                   toast.success(`Switched to ${projects.find((p) => p.id === v)?.name ?? "project"}.`);
                 });
@@ -119,6 +161,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                     {p.name}
                   </SelectItem>
                 ))}
+                <SelectSeparator />
+                <SelectItem value="new_project" className="font-medium text-primary">
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    <span>New Project</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -167,7 +216,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </div>
 
-          <Button size="sm" onClick={() => setNewOpen(true)} className="gap-1">
+          <Button size="sm" onClick={() => setNewRequestOpen(true)} className="gap-1">
             <Plus className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">New Request</span>
           </Button>
@@ -218,7 +267,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </footer>
       </div>
 
-      <NewRequestModal open={newOpen} onOpenChange={setNewOpen} />
+      <NewRequestModal open={newRequestOpen} onOpenChange={setNewRequestOpen} />
+      <NewProjectModal open={newProjectOpen} onOpenChange={setNewProjectOpen} />
+      <NewWorkspaceModal open={newWorkspaceOpen} onOpenChange={setNewWorkspaceOpen} />
     </div>
   );
 }

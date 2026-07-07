@@ -37,7 +37,7 @@ import {
 import { toast } from "sonner";
 import { AppShell } from "@/components/app/AppShell";
 import { PriorityPill, StatusPill, UserAvatar } from "@/components/app/Pills";
-import { Button } from "@/components/ui/button";
+import { Button } from "@corely/ui";
 import {
   Dialog,
   DialogContent,
@@ -45,10 +45,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
+import { Textarea } from "@corely/ui";
 import { getUserDisplay } from "@/lib/reference-data";
 import { useSpecGateStore } from "@/lib/specgate-store";
 import type {

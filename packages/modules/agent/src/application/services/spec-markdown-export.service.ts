@@ -1,44 +1,43 @@
 import type { ApprovedSpecSnapshot } from "@corely/contracts/specgate";
 
 export function generateSpecMarkdown(spec: ApprovedSpecSnapshot): string {
-  const related = spec.relatedFiles.length
-    ? spec.relatedFiles.map((file) => `  - ${file}`).join("\n")
-    : "  []";
   const lines = [
     "---",
     `id: ${spec.specNumber}`,
     `title: ${spec.title}`,
     `status: ${spec.status}`,
-    `priority: ${spec.priority}`,
-    `roadmap_lane: ${spec.roadmapLane}`,
-    "target_milestone: null",
-    "build_cycle: null",
-    `approved_by: ${spec.approvedBy || "null"}`,
-    `approved_at: ${spec.approvedAt || "null"}`,
-    "related_files:",
-    related,
+    `assignee: ${spec.assigneeId || "agent"}`,
+    `target_branch: feature/${spec.specNumber.toLowerCase()}`,
     "---",
     "",
-    `# ${spec.title}`,
+    `# Specification: ${spec.title}`,
     "",
-    "## Problem",
-    spec.summary || spec.description || "",
+    "<context>",
+    spec.summary || "No context provided.",
+    "</context>",
     "",
-    "## Expected Behavior",
-    spec.description || spec.summary || "",
+    "<intent>",
+    spec.description || "No intent provided.",
+    "</intent>",
+    "",
+    "## Architecture & Implementation",
+    "",
+    "<architecture>",
+    spec.technicalNotes || "None specified.",
+    "</architecture>",
     "",
     "## Acceptance Criteria",
-    ...spec.acceptanceCriteria.map((item) => `- ${item}`),
     "",
-    "## Out of Scope",
+    "<acceptance_criteria>",
+    ...spec.acceptanceCriteria.map((item, index) => `${index + 1}. ${item}`),
+    "</acceptance_criteria>",
+    "",
+    "## Constraints & Out of Scope",
+    "",
+    "<constraints>",
     ...spec.outOfScope.map((item) => `- ${item}`),
+    "</constraints>",
   ];
-  if (spec.audience) lines.push("", "## Audience", spec.audience);
-  if (spec.openQuestions.length) {
-    lines.push("", "## Open Questions", ...spec.openQuestions.map((item) => `- ${item}`));
-  }
-  if (spec.technicalNotes)
-    lines.push("", "## Technical Notes", spec.technicalNotes);
-  if (spec.uiNotes) lines.push("", "## UI Notes", spec.uiNotes);
+
   return lines.join("\n");
 }

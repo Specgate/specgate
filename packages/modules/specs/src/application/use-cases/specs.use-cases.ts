@@ -53,9 +53,9 @@ export class SpecsUseCases {
     private readonly storage?: ObjectStoragePort,
   ) {}
 
-  async listProjects(ctx: RequestContext): Promise<{ data: ProjectDto[] }> {
+  async listProjects(ctx: RequestContext, workspaceId?: string): Promise<{ data: ProjectDto[] }> {
     return {
-      data: (await this.repository.listProjects(ctx.tenantId)).map(mapProject),
+      data: (await this.repository.listProjects(ctx.tenantId, workspaceId)).map(mapProject),
     };
   }
 
@@ -76,6 +76,7 @@ export class SpecsUseCases {
     const project = {
       id: randomUUID(),
       tenantId: ctx.tenantId,
+      workspaceId: input.workspaceId || null,
       name: input.name,
       slug: input.slug || slugify(input.name),
       description: input.description || null,

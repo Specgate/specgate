@@ -1,9 +1,13 @@
-import type { DemoState, Project, User } from "@/types/specgate";
+import type { DemoState, Project, User, Workspace } from "@/types/specgate";
+
+export const fallbackWorkspaces: Workspace[] = [
+  { id: "workspace_demo", name: "Acme Corp" },
+];
 
 export const fallbackProjects: Project[] = [
-  { id: "launchos", name: "LaunchOS" },
-  { id: "talelingo", name: "TaleLingo" },
-  { id: "corelynext", name: "CorelyNext" },
+  { id: "launchos", name: "LaunchOS", workspaceId: "workspace_demo" },
+  { id: "talelingo", name: "TaleLingo", workspaceId: "workspace_demo" },
+  { id: "corelynext", name: "CorelyNext", workspaceId: "workspace_demo" },
 ];
 
 export const users: User[] = [
@@ -31,7 +35,9 @@ export function getUserDisplay(userId?: string | null): User | null {
 
 export const initialState: DemoState = {
   mode: "team",
+  currentWorkspaceId: "",
   currentProjectId: "",
+  workspaces: fallbackWorkspaces,
   projects: fallbackProjects,
   specs: [],
   comments: [],

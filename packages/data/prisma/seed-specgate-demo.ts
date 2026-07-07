@@ -371,11 +371,36 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
     });
   }
 
+  // 4b. Seed Default Workspaces
+  await prisma.workspace.upsert({
+    where: { id: "workspace_demo" },
+    update: { name: "Acme Corp" },
+    create: {
+      id: "workspace_demo",
+      tenant: { connect: { id: "tenant_demo" } },
+      name: "Acme Corp",
+      slug: "acme-corp",
+      onboardingStatus: "DONE",
+    },
+  });
+  await prisma.workspace.upsert({
+    where: { id: "workspace_other" },
+    update: { name: "Other Corp" },
+    create: {
+      id: "workspace_other",
+      tenant: { connect: { id: "tenant_other" } },
+      name: "Other Corp",
+      slug: "other-corp",
+      onboardingStatus: "DONE",
+    },
+  });
+
   // 5. Seed Projects
   const projects = [
     {
       id: "project_launchos",
       tenantId: "tenant_demo",
+      workspaceId: "workspace_demo",
       name: "LaunchOS",
       slug: "launchos",
       description: "A SaaS workspace for managing product launches, assets, audience, positioning, and outreach.",
@@ -389,6 +414,7 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
     {
       id: "project_talelingo",
       tenantId: "tenant_demo",
+      workspaceId: "workspace_demo",
       name: "TaleLingo",
       slug: "talelingo",
       description: "A language learning product for Vietnamese adults learning German from A1 to C1.",
@@ -402,6 +428,7 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
     {
       id: "project_corelynext",
       tenantId: "tenant_demo",
+      workspaceId: "workspace_demo",
       name: "CorelyNext",
       slug: "corelynext",
       description: "A Next.js-based modular monolith boilerplate with DDD, hexagonal architecture, and AI-agent-ready docs.",
@@ -415,6 +442,7 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
     {
       id: "project_other_private",
       tenantId: "tenant_other",
+      workspaceId: "workspace_other",
       name: "Other Tenant Private Project",
       slug: "other-private-project",
       description: "This project exists to test multi-tenant isolation rules.",
@@ -530,33 +558,46 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
       tenantId: "tenant_demo",
       projectId: "project_launchos",
       specNumber: "REQ-001",
-      title: "Waitlist Signup",
-      slug: "waitlist-signup",
-      summary: "Visitors can join the waitlist from the landing page using only their email address.",
-      description: "Add a simple waitlist form to the marketing page so interested visitors can leave their email before the full product is ready.",
-      status: "done",
-      priority: "medium",
+      title: "Review TBS integration",
+      slug: "review-tbs-integration",
+      agentReadiness: "needs_clarification",
+      requiresCodeChanges: "unknown",
+      riskLevel: "medium",
+      summary: "Review existing TBS integration",
+      description: "There is an existing integration but we need to review it before making changes.",
+      status: "request",
+      priority: "high",
       roadmapLane: "now",
       targetMilestoneId: "milestone_launchos_mvp",
       buildCycleId: "cycle_launchos_mvp_week_1",
       ownerId: "u-minh",
       assigneeId: "u-david",
-      approvedBy: "u-ha",
-      approvedAt: new Date("2026-06-24T09:00:00.000Z"),
-      acceptedBy: "u-anna",
-      acceptedAt: new Date("2026-06-26T15:30:00.000Z"),
-      doneAt: new Date("2026-06-27T10:00:00.000Z"),
+      approvedBy: null,
+      approvedAt: null,
+      acceptedBy: null,
+      acceptedAt: null,
+      doneAt: null,
       acceptanceCriteriaJson: [
-        "Email field appears in the landing page hero.",
-        "Invalid email shows a validation error.",
-        "Successful signup shows a confirmation message.",
-        "Email is stored for later export.",
-        "Admin list is out of scope."
+        "Existing TBS integration entry points are identified.",
+        "Related files/modules are listed with short explanations.",
+        "Current data flow is documented from caller → API/service → TBS/mock/external dependency.",
+        "Missing or risky parts are listed.",
+        "Required follow-up tickets are proposed.",
+        "If code changes are made, tests/build/typecheck commands are run and results are reported.",
+        "If no code changes are made, the final output clearly says 'review only; no code changed.'"
       ],
-      outOfScopeJson: ["Admin contact management", "Double opt-in email", "CRM integration"],
-      relatedFilesJson: ["apps/app/app/page.tsx", "apps/app/src/features/waitlist"],
-      technicalNotes: "Use existing form validation utilities. Store data through the waitlist endpoint.",
-      uiNotes: "Keep the success state friendly and lightweight.",
+      outOfScopeJson: ["Refactoring the integration", "Fixing bugs found during review"],
+      openQuestionsJson: [
+        "Who is the primary user?",
+        "What does success look like?",
+        "What is explicitly out of scope?"
+      ],
+      agentTargetsJson: ["claude_code", "codex", "cursor", "github_copilot", "generic_markdown"],
+      suggestedSearchTermsJson: ["TBS", "integration"],
+      verificationPlanJson: ["Run tests to ensure no regressions"],
+      relatedFilesJson: [],
+      technicalNotes: null,
+      uiNotes: null,
       createdBy: "u-minh"
     },
     {

@@ -25,6 +25,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
+      "@corely/data": ["../../packages/data/src/index.ts"],
+      "@corely/data/*": ["../../packages/data/src/*"],
       "@corely/kernel": ["../../packages/kernel/src/index.ts"],
       "@corely/kernel/*": ["../../packages/kernel/src/*"],
       "@corely/storage": ["../../packages/storage/src/index.ts"],

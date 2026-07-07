@@ -37,7 +37,7 @@ model LegalEntity {
 model Workspace {
   id                    String                    @id @default(cuid())
   tenantId              String
-  legalEntityId         String
+  legalEntityId         String?
   name                  String
   slug                  String?                   @unique
   publicEnabled         Boolean                   @default(false)
@@ -50,11 +50,12 @@ model Workspace {
 
   // Relations
   tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  legalEntity LegalEntity           @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  legalEntity LegalEntity?          @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
   memberships WorkspaceMembership[]
   invites     WorkspaceInvite[]
   domains     WorkspaceDomain[]
   integrationConnections IntegrationConnection[]
+  specGateProjects       SpecGateProject[]
 
   @@unique([tenantId, name])
   @@index([tenantId])

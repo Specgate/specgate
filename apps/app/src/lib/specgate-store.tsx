@@ -13,6 +13,8 @@ import {
 
 const STORAGE_KEY = "specpilot-demo-state";
 const MODE_STORAGE_KEY = "specpilot-mode";
+const PROJECT_STORAGE_KEY = "specpilot-project";
+const WORKSPACE_STORAGE_KEY = "specpilot-workspace";
 
 interface SpecGateStoreContext {
   state: DemoState;
@@ -20,6 +22,7 @@ interface SpecGateStoreContext {
   error: string | null;
   refresh: () => Promise<void>;
   setMode: (mode: DemoMode) => void;
+  setWorkspace: (id: string) => Promise<void>;
   setProject: (id: string) => Promise<void>;
   updateSpec: (id: string, patch: Partial<Spec>) => Promise<void>;
   setSpecStatus: (id: string, status: SpecStatus) => Promise<void>;
@@ -40,16 +43,35 @@ function loadMode(): DemoMode {
   return initialState.mode;
 }
 
+function loadProjectId(workspaceId?: string): string | undefined {
+  try {
+    const key = workspaceId ? `${PROJECT_STORAGE_KEY}:${workspaceId}` : PROJECT_STORAGE_KEY;
+    return localStorage.getItem(key) || undefined;
+  } catch {}
+  return undefined;
+}
+
+function loadWorkspaceId(): string | undefined {
+  try {
+    return localStorage.getItem(WORKSPACE_STORAGE_KEY) || undefined;
+  } catch {}
+  return undefined;
+}
+
 export function SpecGateStoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DemoState>(initialState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function refresh(projectId = state.currentProjectId, mode = state.mode) {
+  async function refresh(
+    projectId = state.currentProjectId,
+    mode = state.mode,
+    workspaceId = state.currentWorkspaceId
+  ) {
     setLoading(true);
     setError(null);
     try {
-      const next = await loadWorkspaceState({ mode, currentProjectId: projectId });
+      const next = await loadWorkspaceState({ mode, currentProjectId: projectId, currentWorkspaceId: workspaceId });
       setState(next);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unable to load SpecGate data.";
@@ -60,7 +82,8 @@ export function SpecGateStoreProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    void refresh(undefined, loadMode());
+    const wId = loadWorkspaceId();
+    void refresh(loadProjectId(wId), loadMode(), wId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -82,9 +105,22 @@ export function SpecGateStoreProvider({ children }: { children: ReactNode }) {
       } catch {}
       setState((s) => ({ ...s, mode }));
     },
+    setWorkspace: async (id) => {
+      try {
+        localStorage.setItem(WORKSPACE_STORAGE_KEY, id);
+      } catch {}
+      setState((s) => ({ ...s, currentWorkspaceId: id }));
+      await refresh(loadProjectId(id), state.mode, id);
+    },
     setProject: async (id) => {
+      try {
+        localStorage.setItem(PROJECT_STORAGE_KEY, id);
+        if (state.currentWorkspaceId) {
+          localStorage.setItem(`${PROJECT_STORAGE_KEY}:${state.currentWorkspaceId}`, id);
+        }
+      } catch {}
       setState((s) => ({ ...s, currentProjectId: id }));
-      await refresh(id, state.mode);
+      await refresh(id, state.mode, state.currentWorkspaceId);
     },
     updateSpec: async (id, patch) => {
       await updateSpecApi(findSpec(id), patch);

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
 import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill, PriorityPill } from "@/components/app/Pills";
-import { Button } from "@/components/ui/button";
+import { Button } from "@corely/ui";
 import { Sparkles, AlertTriangle, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -14,13 +14,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
+} from "@corely/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@corely/ui";
 import { suggestRoadmapPlan as suggestRoadmapPlanApi } from "@/lib/specgate-api";
 
 const lanes: RoadmapLane[] = ["Now", "Next", "Later", "Icebox"];

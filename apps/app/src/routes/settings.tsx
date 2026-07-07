@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
 import { useSpecGateStore } from "@/lib/specgate-store";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Switch } from "@corely/ui";
 import { users } from "@/lib/reference-data";
 import { UserAvatar } from "@/components/app/Pills";
 import { GitBranch, RotateCcw } from "lucide-react";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
-} from "@/components/ui/dialog";
+} from "@corely/ui";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — SpecPilot" }] }),

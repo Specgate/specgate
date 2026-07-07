@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/app/AppShell";
 import { useSpecGateStore } from "@/lib/specgate-store";
 import { StatusPill } from "@/components/app/Pills";
-import { Button } from "@/components/ui/button";
+import { Button } from "@corely/ui";
 import { Eye, ExternalLink, CheckCircle2, MessageSquare, X, AlertTriangle, Send, Globe } from "lucide-react";
 import { useState } from "react";
 import {
@@ -12,8 +12,8 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+} from "@corely/ui";
+import { Textarea } from "@corely/ui";
 import { toast } from "sonner";
 import type { Spec } from "@/types/specgate";
 import { commentOnPreview, rejectPreview } from "@/lib/specgate-api";

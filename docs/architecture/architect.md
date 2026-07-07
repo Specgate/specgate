@@ -71,11 +71,12 @@ As Corely grows, domains should be treated as bounded contexts with their own ow
 
 | Module domain             | Purpose                                             | Core entities (examples)                           |
 | ------------------------- | --------------------------------------------------- | -------------------------------------------------- |
-| Identity & Access         | Tenants, users, roles, policies, API keys.          | Tenant, User, Membership, Role, Permission         |
-| Documents                 | Receipts, contracts, attachments, OCR metadata.     | Document, File, DocumentLink                       |
-| Billing & Payments        | Invoices, payments, refunds, allocations.           | Invoice, InvoiceLine, Payment, Allocation          |
-| Workflows                 | State machines, approvals, tasks.                   | WorkflowDefinition, WorkflowInstance, Task         |
-| AI Copilot                | Tool registry, runs, messages, tool execution logs. | AgentRun, Message, ToolExecution, Attachment       |
+| Agent                     | AI Agent orchestration and execution.               | AgentRun, Message, ToolExecution                   |
+| Specs                     | Software specifications and requirements.           | Spec, Requirement                                  |
+| Planning                  | Task breakdown and architecture planning.           | Plan, Task                                         |
+| Implementation            | Code generation and implementation tasks.           | CodeFile, ImplementationJob                        |
+| Preview                   | Previewing generated applications or UI.            | PreviewEnvironment, Deployment                     |
+| Activity                  | System and user activity logging.                   | ActivityLog, Event                                 |
 | Todos (Sample)            | Sample domain for task management.                  | Todo, TodoList                                     |
 
 ---
@@ -92,10 +93,8 @@ As Corely grows, domains should be treated as bounded contexts with their own ow
 
 ## Current implementation status
 
-The first extracted module is `todos`, which already follows the new shape:
+The extracted modules currently include: `activity`, `agent`, `implementation`, `planning`, `preview`, `specs`, and `todos`. They follow the new shape:
 
-- Next pages under `apps/app/app/(dashboard)/todos/*`
-- route handlers under `apps/app/app/api/todos/*`
-- module package under `packages/modules/todos`
-
-Additional legacy domains must follow the same extraction pattern before they become part of the new runtime.
+- Next pages under `apps/app/app/(dashboard)/<module>/*`
+- route handlers under `apps/app/app/api/<module>/*`
+- module package under `packages/modules/<module>`

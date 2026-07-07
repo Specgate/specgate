@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@corely/ui/utils";
 import type { SpecStatus, Priority } from "@/types/specgate";
 import { useSpecGateStore } from "@/lib/specgate-store";
 

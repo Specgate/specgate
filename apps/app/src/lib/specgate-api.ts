@@ -15,6 +15,7 @@ import type {
   SpecDto,
   SpecInput,
   SpecUpdate,
+  WorkspaceDto,
 } from "@corely/contracts/specgate";
 import type {
   Activity,
@@ -29,6 +30,7 @@ import type {
   Spec,
   SpecAsset,
   SpecCheck,
+  Workspace,
 } from "@/types/specgate";
 import { getUserDisplay } from "./reference-data";
 
@@ -87,11 +89,20 @@ export const laneToApi = (lane: RoadmapLane) =>
 
 const dateOnly = (value?: string | null) => (value ? value.slice(0, 10) : "");
 
+function mapWorkspace(workspace: WorkspaceDto): Workspace {
+  return {
+    id: workspace.id,
+    name: workspace.name,
+    slug: workspace.slug ?? undefined,
+  };
+}
+
 function mapProject(project: ProjectDto): Project {
   return {
     id: project.id,
     name: project.name,
     slug: project.slug,
+    workspaceId: project.workspaceId,
   };
 }
 
@@ -286,18 +297,47 @@ export async function resetAndSeedDemo() {
   await api<ApiEnvelope<{ seeded: true; projectId: string }>>("/demo/seed", { method: "POST" });
 }
 
+export async function createWorkspace(name: string): Promise<Workspace> {
+  const result = await api<ApiEnvelope<WorkspaceDto>>("/workspaces", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+  return mapWorkspace(result.data);
+}
+
+export async function createProject(name: string, workspaceId?: string): Promise<Project> {
+  const result = await api<ApiEnvelope<ProjectDto>>("/projects", {
+    method: "POST",
+    body: JSON.stringify({ name, workspaceId }),
+  });
+  return mapProject(result.data);
+}
+
 export async function loadWorkspaceState(options: {
   mode: DemoState["mode"];
   currentProjectId?: string;
+  currentWorkspaceId?: string;
 }): Promise<DemoState> {
-  let projects = (await api<ApiEnvelope<ProjectDto[]>>("/projects")).data;
+  let [workspaces, projects] = await Promise.all([
+    api<ApiEnvelope<WorkspaceDto[]>>("/workspaces").then((r) => r.data),
+    api<ApiEnvelope<ProjectDto[]>>("/projects").then((r) => r.data),
+  ]);
+
   if (projects.length === 0) {
     await resetAndSeedDemo();
+    workspaces = (await api<ApiEnvelope<WorkspaceDto[]>>("/workspaces")).data;
     projects = (await api<ApiEnvelope<ProjectDto[]>>("/projects")).data;
   }
 
+  const workspaceId =
+    workspaces.find((w) => w.id === options.currentWorkspaceId)?.id ??
+    projects.find((p) => p.id === options.currentProjectId)?.workspaceId ??
+    workspaces[0]?.id ??
+    "";
+
   const projectId =
     projects.find((project) => project.id === options.currentProjectId)?.id ??
+    projects.find((project) => project.workspaceId === workspaceId)?.id ??
     projects[0]?.id ??
     "";
 
@@ -353,7 +393,9 @@ export async function loadWorkspaceState(options: {
 
   return {
     mode: options.mode,
+    currentWorkspaceId: workspaceId,
     currentProjectId: projectId,
+    workspaces: workspaces.map(mapWorkspace),
     projects: projects.map(mapProject),
     specs: specs.map((spec) =>
       mapSpec(spec, {

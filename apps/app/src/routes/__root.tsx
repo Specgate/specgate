@@ -6,7 +6,7 @@ import {
   useRouter,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@corely/ui";
 import { SpecGateStoreProvider } from "@/lib/specgate-store";
 
 import { reportLovableError } from "../lib/lovable-error-reporting";

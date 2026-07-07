@@ -29,10 +29,17 @@ export interface Milestone {
   targetDate: string;
 }
 
+export interface Workspace {
+  id: string;
+  name: string;
+  slug?: string;
+}
+
 export interface Project {
   id: string;
   name: string;
   slug?: string;
+  workspaceId?: string | null;
 }
 
 export interface Comment {
@@ -153,7 +160,9 @@ export interface Activity {
 
 export interface DemoState {
   mode: DemoMode;
+  currentWorkspaceId: string;
   currentProjectId: string;
+  workspaces: Workspace[];
   projects: Project[];
   specs: Spec[];
   comments: Comment[];

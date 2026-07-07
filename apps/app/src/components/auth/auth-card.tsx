@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from '@corely/ui';
+import { Input } from '@corely/ui';
 import { useAuth } from "./auth-context";
 
 export interface AuthCardProps {

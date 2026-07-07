@@ -77,8 +77,7 @@ export class AgentUseCases {
       ctx.tenantId,
       specId,
     );
-    if (!latest)
-      throw new NotFoundError(`No agent context found for spec ${specId}.`);
+    if (!latest) return { data: null };
     return { data: mapAgentContext(latest) };
   }
 
@@ -119,8 +118,7 @@ export class AgentUseCases {
       ctx.tenantId,
       specId,
     );
-    if (!latest)
-      throw new NotFoundError(`No spec-code check found for spec ${specId}.`);
+    if (!latest) return { data: null };
     return { data: mapSpecCodeCheck(latest) };
   }
 }

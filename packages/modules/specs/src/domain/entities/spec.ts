@@ -37,6 +37,7 @@ export type SpecRecord = {
 export type ProjectRecord = {
   id: string;
   tenantId: string;
+  workspaceId: string | null;
   name: string;
   slug: string;
   description: string | null;

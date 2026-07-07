@@ -37,9 +37,11 @@ const asStringArray = (value: unknown): string[] =>
 export class PrismaSpecsRepository implements SpecsRepositoryPort {
   constructor(private readonly prisma: PrismaClientShape) {}
 
-  listProjects(tenantId: string): Promise<ProjectRecord[]> {
+  listProjects(tenantId: string, workspaceId?: string): Promise<ProjectRecord[]> {
+    const where: any = { tenantId };
+    if (workspaceId) where.workspaceId = workspaceId;
     return this.prisma.specGateProject
-      .findMany({ where: { tenantId }, orderBy: { createdAt: "asc" } })
+      .findMany({ where, orderBy: { createdAt: "asc" } })
       .then((rows) => rows.map(this.mapProject));
   }
 
