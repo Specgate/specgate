@@ -27,7 +27,7 @@ import {
   PrismaEngineeringContextRepository,
   DeterministicAgentExportGenerator,
   EngineeringContextUseCases,
-} from "@corely/modules-specgate-engineering-context";
+} from "@corely/modules-engineering-context";
 import { getPrisma } from "./prisma";
 import { getObjectStorage } from "./object-storage";
 import { seedSpecGateDemo, resetSpecGateDemo } from "../../../../packages/data/prisma/seed-specgate-demo";

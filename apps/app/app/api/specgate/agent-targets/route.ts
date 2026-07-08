@@ -7,5 +7,6 @@ export const GET = (
   request: Request,
 ) =>
   handleApi(request, async ({ runtime }) => {
-    return runtime.engineeringContext.listAgentTargets.execute();
+    const data = await runtime.engineeringContext.listAgentTargets.execute();
+    return { data };
   });

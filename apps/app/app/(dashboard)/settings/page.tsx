@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
 import { useSpecGateStore } from "@/lib/specgate-store";
 import { Button } from "@corely/ui";
@@ -75,6 +76,19 @@ export default function SettingsPage(): any {
           <Row label="Workspace"><Input defaultValue="SpecGate Team" /></Row>
           <Row label="Mode"><Input defaultValue="Team Mode" /></Row>
           <Row label="Default milestone"><Input defaultValue="MVP" /></Row>
+        </Card>
+
+        <Card 
+          title="Engineering Context" 
+          actions={
+            <Link href="/settings/engineering-context">
+              <Button size="sm">Manage Context</Button>
+            </Link>
+          }
+        >
+          <p className="text-sm text-muted-foreground">
+            Configure the project architecture, coding conventions, rules, ADRs, and agent exports.
+          </p>
         </Card>
 
         <Card title="Git sync" icon={<GitBranch className="h-4 w-4 text-primary" />}>

@@ -102,6 +102,9 @@ describe('DeterministicAgentExportGenerator', () => {
       projectId: 'p1',
       specId: 's1',
       specDetails: { title: 'Test Spec', status: 'draft', priority: 'high' } as any,
+      context: null as any,
+      rules: [],
+      adrs: [],
       targetAgent: { id: 'cursor', label: 'Cursor', category: 'agent', defaultEnabled: true },
       validationCommands: []
     });

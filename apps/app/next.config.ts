@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     "@corely/modules-planning",
     "@corely/modules-preview",
     "@corely/modules-specs",
-    "@corely/modules-specgate-engineering-context",
+    "@corely/modules-engineering-context",
     "@corely/prompts",
     "@corely/storage",
     "@corely/ui",

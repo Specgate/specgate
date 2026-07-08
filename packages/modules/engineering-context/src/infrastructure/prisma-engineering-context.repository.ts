@@ -94,15 +94,15 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         title: req.title,
         category: req.category,
         scopeType: req.scopeType,
-        pathGlob: req.pathGlob,
-        moduleName: req.moduleName,
+        pathGlob: req.pathGlob ?? null,
+        moduleName: req.moduleName ?? null,
         severity: req.severity,
         contentMarkdown: req.contentMarkdown,
         enabled: req.enabled ?? true,
         sortOrder: req.sortOrder ?? 0,
         targetAgentIds: req.targetAgentIds ?? [],
         createdBy: userId,
-      }
+      } as any
     });
     return rule as unknown as ProjectContextRuleDto;
   }
@@ -122,7 +122,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         sortOrder: req.sortOrder,
         targetAgentIds: req.targetAgentIds,
         updatedBy: userId,
-      }
+      } as any
     });
     return rule as unknown as ProjectContextRuleDto;
   }
@@ -160,11 +160,11 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         status: req.status ?? 'PROPOSED',
         contextMarkdown: req.contextMarkdown,
         decisionMarkdown: req.decisionMarkdown,
-        alternativesMarkdown: req.alternativesMarkdown,
-        consequencesMarkdown: req.consequencesMarkdown,
-        supersedesAdrId: req.supersedesAdrId,
+        alternativesMarkdown: req.alternativesMarkdown ?? null,
+        consequencesMarkdown: req.consequencesMarkdown ?? null,
+        supersedesAdrId: req.supersedesAdrId ?? null,
         createdBy: userId,
-      }
+      } as any
     });
     return adr as unknown as ProjectAdrDto;
   }
@@ -182,7 +182,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         supersedesAdrId: req.supersedesAdrId,
         updatedBy: userId,
         decidedAt: req.status === 'ACCEPTED' ? new Date() : undefined,
-      }
+      } as any
     });
     return adr as unknown as ProjectAdrDto;
   }
@@ -203,7 +203,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
 
     await this.prisma.specGateProjectValidationCommand.createMany({
       data: req.commands.map(cmd => ({
-        id: cmd.id,
+        id: cmd.id as any,
         tenantId,
         projectId: req.projectId,
         contextId,

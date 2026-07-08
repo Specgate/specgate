@@ -1,5 +1,5 @@
 {
-  "name": "@corely/modules-specgate-engineering-context",
+  "name": "@corely/modules-engineering-context",
   "private": true,
   "version": "0.0.0",
   "license": "AGPL-3.0-only",
@@ -17,6 +17,7 @@
   "devDependencies": {
     "@prisma/client": "catalog:",
     "@types/node": "catalog:",
+    "tslib": "^2.6.2",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

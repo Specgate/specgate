@@ -8,9 +8,10 @@ export const POST = (
   context: { params: Promise<{ projectId: string }> },
 ) =>
   handleApi(request, async ({ ctx, runtime }) => {
-    return runtime.engineeringContext.generateProjectAgentExports.execute(
+    const data = await runtime.engineeringContext.generateProjectAgentExports.execute(
       ctx.tenantId,
       (await context.params).projectId,
       ctx.userId
     );
+    return { data };
   });

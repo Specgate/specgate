@@ -12,7 +12,7 @@
     "paths": {
       "@corely/contracts/specgate": ["../../contracts/src/specgate/index.ts"],
       "@corely/modules-specs": ["../specs/src/index.ts"],
-      "@corely/modules-specgate-engineering-context": ["../specgate-engineering-context/src/index.ts"]
+      "@corely/modules-engineering-context": ["../engineering-context/src/index.ts"]
     }
   },
   "include": ["src"]

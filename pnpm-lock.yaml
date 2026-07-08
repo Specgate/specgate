@@ -222,6 +222,9 @@ importers:
       '@corely/modules-agent':
         specifier: workspace:*
         version: link:../../packages/modules/agent
+      '@corely/modules-engineering-context':
+        specifier: workspace:*
+        version: link:../../packages/modules/engineering-context
       '@corely/modules-implementation':
         specifier: workspace:*
         version: link:../../packages/modules/implementation
@@ -231,9 +234,6 @@ importers:
       '@corely/modules-preview':
         specifier: workspace:*
         version: link:../../packages/modules/preview
-      '@corely/modules-specgate-engineering-context':
-        specifier: workspace:*
-        version: link:../../packages/modules/specgate-engineering-context
       '@corely/modules-specs':
         specifier: workspace:*
         version: link:../../packages/modules/specs
@@ -851,6 +851,37 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
+  packages/modules/engineering-context:
+    dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@corely/data':
+        specifier: workspace:*
+        version: link:../../data
+      '@corely/domain':
+        specifier: workspace:*
+        version: link:../../domain
+      '@corely/kernel':
+        specifier: workspace:*
+        version: link:../../kernel
+    devDependencies:
+      '@prisma/client':
+        specifier: 'catalog:'
+        version: 7.4.1(prisma@7.4.1(@types/react@19.2.17)(magicast@0.3.5)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3))(typescript@5.9.3)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.11
+      tslib:
+        specifier: ^2.6.2
+        version: 2.8.1
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.19.11)(lightningcss@1.32.0)(terser@5.48.0)
+
   packages/modules/implementation:
     dependencies:
       '@corely/contracts':
@@ -901,34 +932,6 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
-
-  packages/modules/specgate-engineering-context:
-    dependencies:
-      '@corely/contracts':
-        specifier: workspace:*
-        version: link:../../contracts
-      '@corely/data':
-        specifier: workspace:*
-        version: link:../../data
-      '@corely/domain':
-        specifier: workspace:*
-        version: link:../../domain
-      '@corely/kernel':
-        specifier: workspace:*
-        version: link:../../kernel
-    devDependencies:
-      '@prisma/client':
-        specifier: 'catalog:'
-        version: 7.4.1(prisma@7.4.1(@types/react@19.2.17)(magicast@0.3.5)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3))(typescript@5.9.3)
-      '@types/node':
-        specifier: 'catalog:'
-        version: 22.19.11
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-      vitest:
-        specifier: 'catalog:'
-        version: 2.1.9(@types/node@22.19.11)(lightningcss@1.32.0)(terser@5.48.0)
 
   packages/modules/specs:
     dependencies:
@@ -13903,7 +13906,7 @@ snapshots:
 
   '@types/duplexify@3.6.5':
     dependencies:
-      '@types/node': 22.19.11
+      '@types/node': 22.20.0
 
   '@types/estree@1.0.8': {}
 
@@ -13944,7 +13947,7 @@ snapshots:
   '@types/pumpify@1.4.5':
     dependencies:
       '@types/duplexify': 3.6.5
-      '@types/node': 22.19.11
+      '@types/node': 22.20.0
 
   '@types/react-dom@18.3.7(@types/react@18.3.28)':
     dependencies:
@@ -13966,7 +13969,7 @@ snapshots:
   '@types/request@2.48.13':
     dependencies:
       '@types/caseless': 0.12.5
-      '@types/node': 22.19.11
+      '@types/node': 22.20.0
       '@types/tough-cookie': 4.0.5
       form-data: 2.5.5
 
@@ -15039,7 +15042,7 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.4.7
+      dotenv: 16.6.1
 
   dotenv@16.4.7: {}
 
@@ -17356,7 +17359,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 22.19.11
+      '@types/node': 22.20.0
       long: 5.3.2
 
   pump@3.0.3:

@@ -15,7 +15,7 @@
     "@corely/modules-implementation": "workspace:*",
     "@corely/modules-planning": "workspace:*",
     "@corely/modules-preview": "workspace:*",
-    "@corely/modules-specgate-engineering-context": "workspace:*",
+    "@corely/modules-engineering-context": "workspace:*",
     "@corely/modules-specs": "workspace:*",
     "@corely/prompts": "workspace:*",
     "@corely/storage": "workspace:*",

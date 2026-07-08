@@ -9,5 +9,6 @@ export const GET = (
 ) =>
   handleApi(request, async ({ ctx, runtime }) => {
     const projectId = (await context.params).projectId;
-    return runtime.engineeringContext.getAgentReadiness.execute(ctx.tenantId, projectId);
+    const data = await runtime.engineeringContext.getAgentReadiness.execute(ctx.tenantId, projectId);
+    return { data };
   });
