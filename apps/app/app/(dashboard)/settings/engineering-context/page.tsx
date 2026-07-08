@@ -8,7 +8,7 @@ import { Loader2, Copy, Download, RefreshCw, CheckCircle2, AlertTriangle, XCircl
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, Button, Input, Label } from "@corely/ui";
 import { toast } from "sonner";
 
-export default function EngineeringContextPage() {
+export default function EngineeringContextPage(): any {
   const { state } = useSpecGateStore();
   const projectId = state.currentProjectId;
   

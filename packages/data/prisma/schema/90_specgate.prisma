@@ -69,11 +69,18 @@ model SpecGateSpec {
   createdAt              DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime  @updatedAt @db.Timestamptz(6)
 
+  requestDocumentJson    Json?
+  requestPlainText       String?
+  requestMarkdown        String?
+  extractionStatus       String    @default("dirty")
+  lastExtractedAt        DateTime? @db.Timestamptz(6)
+
   project   SpecGateProject       @relation(fields: [projectId], references: [id])
   versions  SpecGateSpecVersion[]
   comments  SpecGateComment[]
   decisions SpecGateDecision[]
   assets    SpecGateSpecAsset[]
+  proposals SpecGateCopilotProposal[]
 
   @@unique([tenantId, projectId, specNumber])
   @@index([tenantId])
@@ -366,4 +373,25 @@ model SpecGateActivity {
   @@index([tenantId, type])
   @@index([tenantId, createdAt])
   @@map("specgate_activities")
+}
+
+model SpecGateCopilotProposal {
+  id             String   @id @default(cuid())
+  tenantId       String
+  specId         String
+  type           String
+  status         String   @default("draft") // draft, applied, rejected
+  summary        String
+  proposedPatchJson Json?
+  questionsJson     Json?
+  createdBy      String   @default("ai")
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+
+  spec SpecGateSpec @relation(fields: [specId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, specId])
+  @@index([tenantId, status])
+  @@map("specgate_copilot_proposals")
 }

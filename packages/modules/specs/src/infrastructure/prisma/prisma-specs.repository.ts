@@ -171,6 +171,11 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       data.verificationPlanJson = patch.verificationPlan;
       delete data.verificationPlan;
     }
+    if ("requestDocumentJson" in patch) data.requestDocumentJson = patch.requestDocumentJson;
+    if ("requestPlainText" in patch) data.requestPlainText = patch.requestPlainText;
+    if ("requestMarkdown" in patch) data.requestMarkdown = patch.requestMarkdown;
+    if ("extractionStatus" in patch) data.extractionStatus = patch.extractionStatus;
+    if ("lastExtractedAt" in patch) data.lastExtractedAt = patch.lastExtractedAt;
     const row = await this.prisma.specGateSpec.update({
       where: { id: specId },
       data,
@@ -462,6 +467,11 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       createdBy: row.createdBy,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+      requestDocumentJson: row.requestDocumentJson,
+      requestPlainText: row.requestPlainText,
+      requestMarkdown: row.requestMarkdown,
+      extractionStatus: row.extractionStatus,
+      lastExtractedAt: row.lastExtractedAt,
     };
   }
 

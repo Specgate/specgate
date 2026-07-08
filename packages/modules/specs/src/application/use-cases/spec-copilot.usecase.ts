@@ -47,6 +47,7 @@ export class SpecCopilotUseCase {
       },
       promptVariables: {
         userInstruction: request.userInstruction || request.action,
+        requestText: spec.requestPlainText || "",
         title: spec.title,
         summary: spec.summary || "",
         background: spec.background || "",

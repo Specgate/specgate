@@ -121,6 +121,35 @@ export class ReadinessChecker {
       message: specDetails.status === 'approved' ? undefined : 'The spec must be approved before agent handoff.',
     });
 
+    // Check Title
+    checks.push({
+      id: 'spec_title',
+      label: 'Title exists',
+      status: !!specDetails.title ? 'pass' : 'fail',
+      severity: 'required',
+      message: specDetails.title ? undefined : 'Title is required.',
+    });
+
+    // Check Request Document
+    const hasMeaningfulContent = !!specDetails.requestPlainText && specDetails.requestPlainText.trim().length > 20;
+    checks.push({
+      id: 'request_document',
+      label: 'Request has meaningful content',
+      status: hasMeaningfulContent ? 'pass' : 'fail',
+      severity: 'required',
+      message: hasMeaningfulContent ? undefined : 'Request document must have meaningful content.',
+    });
+
+    // Check Desired Outcome
+    const hasOutcome = !!specDetails.desiredOutcome;
+    checks.push({
+      id: 'desired_outcome',
+      label: 'Desired Outcome exists',
+      status: hasOutcome ? 'pass' : 'fail',
+      severity: 'required',
+      message: hasOutcome ? undefined : 'Desired Outcome is required.',
+    });
+
     // Check Acceptance Criteria
     const hasAc = specDetails.acceptanceCriteria && Array.isArray(specDetails.acceptanceCriteria) && specDetails.acceptanceCriteria.length > 0;
     checks.push({
@@ -131,15 +160,14 @@ export class ReadinessChecker {
       message: hasAc ? undefined : 'Acceptance criteria are required to verify the implementation.',
     });
 
-    // Check Background & Desired Outcome
-    const hasBg = !!specDetails.background;
-    const hasOutcome = !!specDetails.desiredOutcome;
+    // Check Verification Plan
+    const hasVerificationPlan = specDetails.verificationPlan && Array.isArray(specDetails.verificationPlan) && specDetails.verificationPlan.length > 0;
     checks.push({
-      id: 'context_fields',
-      label: 'Context and Outcome exist',
-      status: hasBg && hasOutcome ? 'pass' : 'warning',
-      severity: 'recommended',
-      message: hasBg && hasOutcome ? undefined : 'Background and Desired Outcome are highly recommended for AI contexts.',
+      id: 'verification_plan',
+      label: 'Verification Plan exists',
+      status: hasVerificationPlan ? 'pass' : 'warning',
+      severity: 'required',
+      message: hasVerificationPlan ? undefined : 'Verification Plan is required.',
     });
 
     // Check Related Files & Search Terms

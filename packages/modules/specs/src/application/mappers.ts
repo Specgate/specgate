@@ -35,6 +35,7 @@ export function mapSpec(row: SpecRecord): SpecDto {
     approvedAt: iso(row.approvedAt),
     acceptedAt: iso(row.acceptedAt),
     doneAt: iso(row.doneAt),
+    lastExtractedAt: iso(row.lastExtractedAt),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

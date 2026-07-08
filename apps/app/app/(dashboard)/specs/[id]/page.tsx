@@ -29,6 +29,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SpecCopilotModal } from "@/components/app/SpecCopilotModal";
+import { SpecEditor } from "@/components/app/SpecEditor";
+import { SpecCopilotSidebar } from "@/components/app/SpecCopilotSidebar";
 import {
   useEffect,
   useMemo,
@@ -105,6 +107,8 @@ const GUARDED_EDIT_STATUSES: SpecStatus[] = [
 ];
 
 type EditorState = {
+  requestDocumentJson: any;
+  requestPlainText: string;
   title: string;
   summary: string;
   audience: string;
@@ -131,7 +135,7 @@ export default function SpecDetailPage(): any {
   const spec = state.specs.find((item) => item.id === id);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [activeTab, setActiveTab] = useState("simple");
+  const [activeTab, setActiveTab] = useState("request");
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<EditorState | null>(null);
   const [confirmSaveOpen, setConfirmSaveOpen] = useState(false);
@@ -248,6 +252,8 @@ export default function SpecDetailPage(): any {
     try {
       await updateSpec(activeSpec.id, {
         title: draft.title,
+        requestDocumentJson: draft.requestDocumentJson,
+        requestPlainText: draft.requestPlainText,
         summary: draft.summary,
         audience: draft.audience || undefined,
         background: draft.background || undefined,
@@ -520,12 +526,75 @@ export default function SpecDetailPage(): any {
         <div>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="flex h-auto flex-wrap justify-start gap-2 rounded-lg border border-border bg-card p-2">
-              <TabsTrigger value="simple"><FileText className="mr-1 h-3.5 w-3.5" />Simple</TabsTrigger>
+              <TabsTrigger value="request"><FileText className="mr-1 h-3.5 w-3.5" />Request</TabsTrigger>
+              <TabsTrigger value="simple"><Sparkles className="mr-1 h-3.5 w-3.5" />Generated Spec</TabsTrigger>
               <TabsTrigger value="technical"><Code2 className="mr-1 h-3.5 w-3.5" />Technical</TabsTrigger>
               <TabsTrigger value="assets"><FileImage className="mr-1 h-3.5 w-3.5" />Assets</TabsTrigger>
               <TabsTrigger value="agent"><Bot className="mr-1 h-3.5 w-3.5" />Agent Handoff</TabsTrigger>
               <TabsTrigger value="activity"><ListChecks className="mr-1 h-3.5 w-3.5" />Activity</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="request" className="mt-5">
+              <Section
+                title="Spec Request"
+                description="Write naturally. SpecGate uses AI Copilot to extract structured fields and ask missing questions."
+                actions={
+                  !isEditing ? (
+                    <div className="flex gap-2">
+                      <Button size="sm" className="gap-1.5" onClick={() => setIsEditing(true)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                        {GUARDED_EDIT_STATUSES.includes(spec.status) ? "Edit approved spec" : "Edit request"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setDraft(seedEditorState(spec));
+                          setIsEditing(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button size="sm" className="gap-1.5" onClick={() => void saveWithGuard()}>
+                        <Save className="h-3.5 w-3.5" />Save
+                      </Button>
+                    </>
+                  )
+                }
+              >
+                <div className="grid lg:grid-cols-[1fr_300px] gap-6">
+                  <div className="min-w-0">
+                    <EditableField
+                      label="Title"
+                      editing={isEditing}
+                      value={draft?.title || ""}
+                      onChange={(value) => draft && setDraft({ ...draft, title: value })}
+                    />
+                    <div className="mt-6">
+                      <label className="mb-1.5 block text-xs font-semibold text-foreground">Document</label>
+                      <SpecEditor
+                        value={draft?.requestDocumentJson}
+                        onChange={(json) => draft && setDraft({ ...draft, requestDocumentJson: json })}
+                        onPlainTextChange={(text) => draft && setDraft({ ...draft, requestPlainText: text })}
+                        readOnly={!isEditing}
+                      />
+                    </div>
+                  </div>
+                  {isEditing && (
+                    <div className="hidden lg:block">
+                      <SpecCopilotSidebar specId={spec.id} onApply={async () => {
+                        await refresh();
+                        void loadSpecDetails(spec.id).catch(() => {});
+                        setIsEditing(false);
+                      }} />
+                    </div>
+                  )}
+                </div>
+              </Section>
+            </TabsContent>
 
             <TabsContent value="simple" className="mt-5">
               <Section
@@ -1598,8 +1667,10 @@ function SparklesIcon() {
   return <Bot className="h-3.5 w-3.5" />;
 }
 
-function seedEditorState(spec: any): EditorState {
+function seedEditorState(spec: Spec): EditorState {
   return {
+    requestDocumentJson: spec.requestDocumentJson || null,
+    requestPlainText: spec.requestPlainText || "",
     title: spec.title,
     summary: spec.summary,
     audience: spec.audience ?? "",

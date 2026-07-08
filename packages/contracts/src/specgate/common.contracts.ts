@@ -83,6 +83,11 @@ export const SpecSchema = z.object({
   createdBy: z.string(),
   createdAt: IsoDateSchema,
   updatedAt: IsoDateSchema,
+  requestDocumentJson: z.unknown().nullable().optional(),
+  requestPlainText: z.string().nullable().optional(),
+  requestMarkdown: z.string().nullable().optional(),
+  extractionStatus: z.enum(["dirty", "synced", "needs_review"]).default("dirty"),
+  lastExtractedAt: IsoDateSchema.nullable().optional(),
 });
 export type SpecDto = z.infer<typeof SpecSchema>;
 
@@ -379,6 +384,11 @@ export const SpecInputSchema = z.object({
   verificationPlan: z.array(z.string()).optional(),
   technicalNotes: z.string().optional().nullable(),
   uiNotes: z.string().optional().nullable(),
+  requestDocumentJson: z.unknown().optional().nullable(),
+  requestPlainText: z.string().optional().nullable(),
+  requestMarkdown: z.string().optional().nullable(),
+  extractionStatus: z.enum(["dirty", "synced", "needs_review"]).optional(),
+  lastExtractedAt: IsoDateSchema.optional().nullable(),
 });
 export type SpecInput = z.input<typeof SpecInputSchema>;
 

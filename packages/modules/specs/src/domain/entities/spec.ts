@@ -39,6 +39,11 @@ export type SpecRecord = {
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
+  requestDocumentJson: unknown | null;
+  requestPlainText: string | null;
+  requestMarkdown: string | null;
+  extractionStatus: "dirty" | "synced" | "needs_review";
+  lastExtractedAt: Date | null;
 };
 
 export type ProjectRecord = {
@@ -121,4 +126,18 @@ export type SpecCodeCheckSummaryRecord = {
   summary: string;
   createdBy: string;
   createdAt: Date;
+};
+
+export type SpecCopilotProposalRecord = {
+  id: string;
+  tenantId: string;
+  specId: string;
+  type: string;
+  status: "draft" | "applied" | "rejected";
+  summary: string;
+  proposedPatchJson: unknown | null;
+  questionsJson: unknown | null;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
 };

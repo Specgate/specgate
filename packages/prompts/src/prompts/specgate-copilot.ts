@@ -34,10 +34,13 @@ You have access to tools that can generate spec proposals.
         version: "v1",
         template: `
 You are tasked with generating a structured proposal for changes to a SpecGate specification.
-The user has requested the following changes:
+The user has requested the following changes or provided this unstructured document text:
+{{requestText}}
+
+User's specific instruction for the copilot (if any):
 {{userInstruction}}
 
-Currently, the spec has the following content:
+Currently, the structured spec has the following content:
 # Title: {{title}}
 # Summary: {{summary}}
 # Background: {{background}}
@@ -66,6 +69,7 @@ Generate a list of proposed changes to improve this spec based on the user instr
 Focus on identifying hidden edge cases and ensuring engineering context is clear.
 `,
         variablesSchema: z.object({
+          requestText: z.string().optional(),
           userInstruction: z.string(),
           title: z.string().optional(),
           summary: z.string().optional(),
@@ -83,6 +87,7 @@ Focus on identifying hidden edge cases and ensuring engineering context is clear
           verificationPlan: z.string().optional()
         }),
         variables: [
+          { key: "requestText" },
           { key: "userInstruction" },
           { key: "title" },
           { key: "summary" },
