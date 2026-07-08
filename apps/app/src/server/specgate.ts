@@ -30,7 +30,6 @@ import {
 } from "@corely/modules-engineering-context";
 import { getPrisma } from "./prisma";
 import { getObjectStorage } from "./object-storage";
-import { seedSpecGateDemo, resetSpecGateDemo } from "../../../../packages/data/prisma/seed-specgate-demo";
 
 class DeterministicSpecCopilotModel implements SpecCopilotModelPort {
   async generateStructuredData<T>(params: {
@@ -112,11 +111,17 @@ export function getDemoRequestContext(request: Request): RequestContext {
 function createDemoRuntime(prisma: any) {
   return {
     async reset() {
+      const { resetSpecGateDemo } = await import(
+        "../../../../packages/data/prisma/seed-specgate-demo"
+      );
       await resetSpecGateDemo(prisma);
       return { data: { reset: true } };
     },
 
     async seed() {
+      const { seedSpecGateDemo } = await import(
+        "../../../../packages/data/prisma/seed-specgate-demo"
+      );
       await seedSpecGateDemo(prisma);
       return { data: { seeded: true, projectId: "project_launchos" } };
     },

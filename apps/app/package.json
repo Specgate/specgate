@@ -86,9 +86,9 @@
     "typescript": "catalog:"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3031",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3031",
     "typecheck": "tsc -p tsconfig.typecheck.json --noEmit"
   },
   "author": "Ha Doan <ha@oneway8x.com>"

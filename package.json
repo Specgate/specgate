@@ -27,6 +27,7 @@
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --fix --cache",
     "kill3000": "lsof -ti:3000 | xargs kill -9",
+    "kill3031": "lsof -ti:3031 | xargs kill -9",
     "arch:check": "node scripts/architecture-check.mjs",
     "check": "pnpm lint && pnpm typecheck && pnpm prompt:check",
     "prompt:check": "node scripts/check-prompts.mjs",
