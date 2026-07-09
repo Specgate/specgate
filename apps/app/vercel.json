@@ -1,6 +1,6 @@
 {
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm build",
+  "buildCommand": "cd ../.. && pnpm --filter @corely/data exec prisma generate && cd apps/app && pnpm build",
   "outputDirectory": ".next",
   "framework": "nextjs"
 }
