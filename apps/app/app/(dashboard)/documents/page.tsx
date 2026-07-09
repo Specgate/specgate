@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { api } from "@/lib/specgate-api";
 import { Button, Input, Tabs, TabsList, TabsTrigger } from "@corely/ui";
 import { Search, Plus, FileText } from "lucide-react";
@@ -12,7 +12,7 @@ import type { SpecGateDocumentListItemDto } from "@corely/contracts/specgate";
 import { formatDistanceToNow } from "date-fns";
 
 export default function DocumentsPage() {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   const [documents, setDocuments] = useState<SpecGateDocumentListItemDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);

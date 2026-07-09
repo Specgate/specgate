@@ -228,13 +228,14 @@ export class AuthClient {
     }
 
     try {
-      const result = await request<{ accessToken: string; refreshToken: string }>({
+      const result = await request<{ accessToken: string }>({
         url: `${this.apiUrl}/auth/refresh`,
         method: "POST",
         body: { refreshToken: this.refreshToken },
       });
 
-      await this.storeTokens(result.accessToken, result.refreshToken);
+      this.accessToken = result.accessToken;
+      await this.storage.setAccessToken(result.accessToken);
     } catch (error) {
       throw normalizeError(error);
     }

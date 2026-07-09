@@ -31,6 +31,18 @@ import {
 import { DocumentsUseCases, PrismaDocumentRepository } from "@corely/modules-documents";
 import { getPrisma } from "./prisma";
 import { getObjectStorage } from "./object-storage";
+import { verifyJwt } from "./auth";
+import { getDevAuthBypassConfig, isDevAuthBypassEnabled } from "./dev-auth-bypass";
+
+class AuthContextError extends Error {
+  readonly type: "unauthorized" | "forbidden";
+
+  constructor(type: "unauthorized" | "forbidden", message: string) {
+    super(message);
+    this.name = "AuthContextError";
+    this.type = type;
+  }
+}
 
 class DeterministicSpecCopilotModel implements SpecCopilotModelPort {
   async generateStructuredData<T>(params: {
@@ -60,7 +72,7 @@ class DeterministicSpecCopilotModel implements SpecCopilotModelPort {
 }
 
 export function createRuntime() {
-  const prisma = getPrisma() as any;
+  const prisma = getPrisma() as never;
   let objectStorage;
   try {
     objectStorage = getObjectStorage();
@@ -107,14 +119,49 @@ export function createRuntime() {
   };
 }
 
-export function getDemoRequestContext(request: Request): RequestContext {
-  return {
-    tenantId: request.headers.get("x-tenant-id") || "tenant_demo",
-    userId: request.headers.get("x-user-id") || "u-ha",
-  };
+export async function getRequestContext(request: Request): Promise<RequestContext> {
+  if (isDevAuthBypassEnabled("specgate")) {
+    const bypassConfig = getDevAuthBypassConfig("specgate");
+    const tenantId =
+      request.headers.get("x-tenant-id") ?? process.env[bypassConfig.tenantFlag];
+    const userId =
+      request.headers.get("x-user-id") ?? process.env[bypassConfig.userFlag ?? ""];
+    if (tenantId && userId) {
+      return { tenantId, userId };
+    }
+  }
+
+  const authorization = request.headers.get("authorization") ?? "";
+  if (!authorization.startsWith("Bearer ")) {
+    throw new AuthContextError("unauthorized", "Authentication is required.");
+  }
+
+  const payload = await verifyJwt(authorization.slice("Bearer ".length));
+  const userId = typeof payload?.sub === "string" ? payload.sub : null;
+  const tenantId =
+    typeof payload?.tenantId === "string" && payload.tenantId.length > 0
+      ? payload.tenantId
+      : null;
+
+  if (!userId) {
+    throw new AuthContextError("unauthorized", "Authentication is required.");
+  }
+  if (!tenantId) {
+    throw new AuthContextError("forbidden", "No active tenant is available for this session.");
+  }
+
+  const membership = await getPrisma().membership.findFirst({
+    where: { userId, tenantId },
+    select: { id: true },
+  });
+  if (!membership) {
+    throw new AuthContextError("forbidden", "You do not have access to this tenant.");
+  }
+
+  return { tenantId, userId };
 }
 
-function createDemoRuntime(prisma: any) {
+function createDemoRuntime(prisma: ReturnType<typeof getPrisma>) {
   return {
     async reset() {
       const { resetSpecGateDemo } = await import(

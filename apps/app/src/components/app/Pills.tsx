@@ -1,6 +1,6 @@
 import { cn } from "@corely/ui/utils";
 import type { SpecStatus, Priority } from "@/types/specgate";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 
 const teamLabels: Record<SpecStatus, string> = {
   request: "Request",
@@ -45,7 +45,7 @@ const colors: Record<SpecStatus, string> = {
 };
 
 export function StatusPill({ status, className }: { status: SpecStatus; className?: string }): any {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   const label = state.mode === "solo" ? soloLabels[status] : teamLabels[status];
   return (
     <span

@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { Switch } from "@corely/ui";
-import { users } from "@/lib/reference-data";
 import { UserAvatar } from "@/components/app/Pills";
 import { GitBranch, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useAuth } from "@/components/auth/auth-context";
 import {
   Dialog,
   DialogContent,
@@ -55,10 +55,24 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 export default function SettingsPage(): any {
-  const { reset } = useSpecGateStore();
+  const { reset, state } = useSpecGateQueryStore();
+  const { user } = useAuth();
   const [resetOpen, setResetOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const isDemoMode = process.env.NEXT_PUBLIC_SPECGATE_DEMO_MODE === "true";
+  const teamMembers = user
+    ? [
+        {
+          id: user.userId,
+          name: user.name ?? user.email,
+          role:
+            user.memberships.find((membership) => membership.tenantId === user.activeTenantId)
+              ?.roleId ?? "Member",
+          type: user.isSuperAdmin ? "admin" : "member",
+        },
+      ]
+    : [];
 
   async function testSync() {
     toast.loading("Testing Git sync...", { id: "git" });
@@ -72,8 +86,8 @@ export default function SettingsPage(): any {
       <PageHeader title="Settings" description="Project, Git, workflow, and team settings." />
       <div className="p-6 space-y-6 max-w-3xl">
         <Card title="Project settings">
-          <Row label="Project name"><Input defaultValue="LaunchOS" /></Row>
-          <Row label="Workspace"><Input defaultValue="SpecGate Team" /></Row>
+          <Row label="Project name"><Input value={state.projects.find((project) => project.id === state.currentProjectId)?.name ?? ""} readOnly /></Row>
+          <Row label="Workspace"><Input value={state.workspaces.find((workspace) => workspace.id === state.currentWorkspaceId)?.name ?? ""} readOnly /></Row>
           <Row label="Mode"><Input defaultValue="Team Mode" /></Row>
           <Row label="Default milestone"><Input defaultValue="MVP" /></Row>
         </Card>
@@ -104,14 +118,14 @@ export default function SettingsPage(): any {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => toast.info("Change repo flow is disabled in this demo.")}
+              onClick={() => toast.info("Repository changes are not available yet.")}
             >
               Change Repo
             </Button>
             <Button
               size="sm"
               variant="outline"
-              onClick={() => toast.error("Disconnect is disabled in this demo.")}
+              onClick={() => toast.error("Disconnect is not available yet.")}
             >
               Disconnect
             </Button>
@@ -141,7 +155,7 @@ export default function SettingsPage(): any {
           }
         >
           <div className="divide-y divide-border">
-            {users.map((u) => (
+            {teamMembers.map((u) => (
               <div key={u.id} className="flex items-center justify-between py-2.5">
                 <div className="flex items-center gap-2.5">
                   <UserAvatar name={u.name} size={28} />
@@ -156,18 +170,20 @@ export default function SettingsPage(): any {
           </div>
         </Card>
 
-        <Card title="Demo data">
-          <p className="text-sm text-muted-foreground">
-            Reset and reseed the API-backed demo workspace.
-          </p>
-          <Button
-            variant="outline"
-            className="gap-1.5 mt-3"
-            onClick={() => setResetOpen(true)}
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> Reset API data
-          </Button>
-        </Card>
+        {isDemoMode ? (
+          <Card title="Demo data">
+            <p className="text-sm text-muted-foreground">
+              Reset and reseed the API-backed demo workspace.
+            </p>
+            <Button
+              variant="outline"
+              className="gap-1.5 mt-3"
+              onClick={() => setResetOpen(true)}
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Reset API data
+            </Button>
+          </Card>
+        ) : null}
       </div>
 
       <Dialog open={resetOpen} onOpenChange={setResetOpen}>

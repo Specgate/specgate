@@ -1,13 +1,12 @@
 "use client";
 
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { StatusPill, PriorityPill, UserAvatar } from "@/components/app/Pills";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Tabs, TabsList, TabsTrigger } from "@corely/ui";
 import { useMemo, useState } from "react";
-import { users } from "@/lib/reference-data";
 import type { SpecStatus } from "@/types/specgate";
 import { Search, Plus, AlertTriangle } from "lucide-react";
 import { NewRequestModal } from "@/components/shared/NewRequestModal";
@@ -25,7 +24,7 @@ const filters: Record<string, SpecStatus[] | null> = {
 };
 
 export default function BacklogPage(): any {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   const [tab, setTab] = useState("All");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
@@ -89,7 +88,6 @@ export default function BacklogPage(): any {
             </div>
           )}
           {filtered.map((s) => {
-            const owner = users.find((u) => u.id === s.ownerId);
             const ms = state.milestones.find((m) => m.id === s.milestoneId);
             return (
               <Link
@@ -107,7 +105,7 @@ export default function BacklogPage(): any {
                 </div>
                 <div className="mt-2 md:mt-0"><StatusPill status={s.status} /></div>
                 <div className="mt-2 md:mt-0"><PriorityPill priority={s.priority} /></div>
-                <div className="mt-2 md:mt-0">{owner && <UserAvatar name={owner.name} />}</div>
+                <div className="mt-2 md:mt-0">{s.ownerId && <UserAvatar name={s.ownerId} />}</div>
                 <div className="mt-2 md:mt-0 text-xs text-muted-foreground">{s.roadmapLane}</div>
                 <div className="mt-2 md:mt-0 text-xs text-muted-foreground">{ms?.name}</div>
                 <div className="mt-2 md:mt-0 text-xs text-muted-foreground text-right">{s.updatedAt}</div>

@@ -1,6 +1,26 @@
 import { ZodError } from "zod";
 
 export function problemFromError(error: unknown): Response {
+  if (
+    error instanceof Error &&
+    "status" in error &&
+    typeof (error as { status?: unknown }).status === "number"
+  ) {
+    const status = (error as { status: number }).status;
+    return Response.json(
+      {
+        error: {
+          type: status === 401 ? "unauthorized" : status === 403 ? "forbidden" : "application",
+          code: (error as { code?: string }).code,
+          message:
+            (error as { publicMessage?: string }).publicMessage ??
+            error.message,
+        },
+      },
+      { status },
+    );
+  }
+
   if (error instanceof Error && "type" in error) {
     const type = String((error as { type?: string }).type || "internal");
     const statusByType: Record<string, number> = {

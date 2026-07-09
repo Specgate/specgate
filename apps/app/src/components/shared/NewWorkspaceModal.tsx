@@ -5,12 +5,12 @@ import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { toast } from "sonner";
 import { createWorkspace } from "@/lib/specgate-api";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 
 export function NewWorkspaceModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }): React.ReactNode {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { setWorkspace } = useSpecGateStore();
+  const { setWorkspace } = useSpecGateQueryStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +50,7 @@ export function NewWorkspaceModal({ open, onOpenChange }: { open: boolean; onOpe
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Acme Corp"
+                placeholder="e.g. Company workspace"
                 className="col-span-3"
               />
             </div>

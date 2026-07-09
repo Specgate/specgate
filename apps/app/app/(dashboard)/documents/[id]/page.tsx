@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { api } from "@/lib/specgate-api";
 import { Button, Input } from "@corely/ui";
 import { ArrowLeft, Save, Trash2, FileText, Upload, X } from "lucide-react";
@@ -20,7 +20,7 @@ export default function DocumentDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   
   const [document, setDocument] = useState<SpecGateDocumentDto | null>(null);
   const [loading, setLoading] = useState(true);

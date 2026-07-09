@@ -1,5 +1,5 @@
 import { ValidationError } from "@corely/modules-specs";
-import { createRuntime, getDemoRequestContext } from "@/server/specgate";
+import { createRuntime, getRequestContext } from "@/server/specgate";
 import { problemFromError } from "@/server/problem-details";
 
 export const runtime = "nodejs";
@@ -10,7 +10,7 @@ export const GET = async (
   context: { params: Promise<{ specId: string }> },
 ) => {
   try {
-    const ctx = getDemoRequestContext(request);
+    const ctx = await getRequestContext(request);
     const runtime = createRuntime();
     return Response.json(
       await runtime.specs.listSpecAssets(ctx, (await context.params).specId),
@@ -31,7 +31,7 @@ export const POST = async (
       throw new ValidationError("Image file is required.");
     }
 
-    const ctx = getDemoRequestContext(request);
+    const ctx = await getRequestContext(request);
     const runtime = createRuntime();
     return Response.json(
       await runtime.specs.uploadSpecImage(ctx, (await context.params).specId, {

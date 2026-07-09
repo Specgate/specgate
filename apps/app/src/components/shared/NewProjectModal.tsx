@@ -6,12 +6,12 @@ import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { toast } from "sonner";
 import { createProject } from "@/lib/specgate-api";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 
 export function NewProjectModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }): React.ReactNode {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { state, setProject } = useSpecGateStore();
+  const { state, setProject } = useSpecGateQueryStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +51,7 @@ export function NewProjectModal({ open, onOpenChange }: { open: boolean; onOpenC
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. LaunchOS v2"
+                placeholder="e.g. Mobile app"
                 className="col-span-3"
               />
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { EngineeringContextDto, AgentExportDto, AgentTargetDto, AgentReadinessCheckDto, ProjectContextRuleDto, ProjectAdrDto, ValidationCommandDto } from "@corely/contracts/specgate";
 import { getProjectAgentReadiness, getAgentTargets } from "@/lib/specgate-api";
 import { Loader2, Copy, Download, RefreshCw, CheckCircle2, AlertTriangle, XCircle, Save, Info } from "lucide-react";
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { toast } from "sonner";
 
 export default function EngineeringContextPage(): any {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   const projectId = state.currentProjectId;
   
   const [context, setContext] = useState<EngineeringContextDto | null>(null);

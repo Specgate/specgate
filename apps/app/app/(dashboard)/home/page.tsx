@@ -1,15 +1,17 @@
 "use client";
 
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { StatusPill, PriorityPill } from "@/components/app/Pills";
 import { AlertTriangle, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@corely/ui";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useAuth } from "@/components/auth/auth-context";
 
 export default function HomePage(): any {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
+  const { user } = useAuth();
   const specs = state.specs;
   const stats = {
     total: specs.length,
@@ -21,26 +23,24 @@ export default function HomePage(): any {
     mismatches: specs.filter((s) => s.warning).length,
   };
 
-  const attention = [
-    specs.find((s) => s.id === "REQ-002"),
-    specs.find((s) => s.id === "REQ-005"),
-    specs.find((s) => s.id === "REQ-004"),
-  ].filter(Boolean) as typeof specs;
+  const attention = specs
+    .filter((spec) => spec.warning || ["review", "stakeholder_review", "developer_review"].includes(spec.status))
+    .slice(0, 3);
 
   const suggestions = [
-    "Move Audience Import into Beta Build Week 1.",
-    "Resolve partner link SEO questions before approval.",
-    "Fix Team Invite expiry mismatch before asking stakeholder to approve.",
-    "Product Asset Library is in development but has no preview URL yet.",
+    `${stats.approved} approved specs are available for planning or delivery.`,
+    `${stats.preview} specs are ready for preview review.`,
+    `${stats.mismatches} specs have warnings that should be reviewed.`,
   ];
 
-  const greetingMode = state.mode === "team" ? "MVP Build Week 1" : "your personal build queue";
+  const activeProject = state.projects.find((project) => project.id === state.currentProjectId);
+  const greetingMode = state.mode === "team" ? "team workflow" : "personal build queue";
 
   return (
     <>
       <PageHeader
-        title="Good morning, Ha"
-        description={`LaunchOS is moving through ${greetingMode}.`}
+        title={`Good morning${user?.name ? `, ${user.name}` : ""}`}
+        description={`${activeProject?.name ?? "Your project"} is moving through ${greetingMode}.`}
       />
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -64,6 +64,11 @@ export default function HomePage(): any {
               Needs attention
             </h2>
             <div className="space-y-3">
+              {attention.length === 0 && (
+                <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+                  No specs need attention right now.
+                </div>
+              )}
               {attention.map((s) => (
                 <Link
                   key={s.id}
