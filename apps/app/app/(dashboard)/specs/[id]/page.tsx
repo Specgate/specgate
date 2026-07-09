@@ -53,8 +53,8 @@ import { Input } from "@corely/ui";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
 import { Textarea } from "@corely/ui";
 import { PriorityPill, StatusPill, UserAvatar } from "@/components/app/Pills";
-import { useSpecGateStore } from "@/lib/specgate-store";
-import { getUserDisplay } from "@/lib/reference-data";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
+import { getUserDisplay } from "@/lib/user-display";
 import type {
   Comment,
   Decision,
@@ -81,6 +81,7 @@ import {
   updateSpecAsset,
   uploadSpecImage,
 } from "@/lib/specgate-api";
+import { useAuth } from "@/components/auth/auth-context";
 
 const COMMENT_SECTIONS = [
   "General",
@@ -131,7 +132,8 @@ export default function SpecDetailPage(): any {
   const params = useParams<{ id: string }>();
   const id = decodeURIComponent(params.id);
   const { state, loading, updateSpec, setSpecStatus, refresh, addComment, loadSpecDetails } =
-    useSpecGateStore();
+    useSpecGateQueryStore();
+  const { user } = useAuth();
   const spec = state.specs.find((item) => item.id === id);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -203,7 +205,6 @@ export default function SpecDetailPage(): any {
       getAgentTargets().then((res) => setAgentTargets(res.data)).catch(() => {});
       getSpecAgentReadiness(spec).then((res) => setReadiness(res.data)).catch(() => {});
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec?.id]);
 
   const dirty = useMemo(() => {
@@ -364,7 +365,7 @@ export default function SpecDetailPage(): any {
       await addComment({
         id: `comment-${Date.now()}`,
         specId: activeSpec.id,
-        authorId: "u-ha",
+        authorId: user?.userId ?? "",
         text: commentBody.trim(),
         sectionReference: commentSection,
         status: "open",

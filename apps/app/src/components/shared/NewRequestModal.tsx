@@ -18,13 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@corely/ui";
-import { useSpecGateStore, nextRequestId } from "@/lib/specgate-store";
+import { useSpecGateQueryStore, nextRequestId } from "@/lib/specgate-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { Priority, RoadmapLane } from "@/types/specgate";
+import { useAuth } from "@/components/auth/auth-context";
 
 export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }): React.ReactNode {
-  const { state, addSpec } = useSpecGateStore();
+  const { state, addSpec } = useSpecGateQueryStore();
+  const { user } = useAuth();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [why, setWhy] = useState("");
@@ -51,7 +53,7 @@ export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenC
         priority,
         roadmapLane: lane,
         milestoneId,
-        ownerId: "u-ha",
+        ownerId: user?.userId ?? "",
         summary: title,
         background: why,
         desiredOutcome: title,

@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { StatusPill } from "@/components/app/Pills";
 import { Button } from "@corely/ui";
 import {
@@ -26,11 +26,11 @@ import { Textarea } from "@corely/ui";
 import { toast } from "sonner";
 import type { Spec } from "@/types/specgate";
 import { commentOnPreview, rejectPreview } from "@/lib/specgate-api";
-import { getUserDisplay } from "@/lib/reference-data";
+import { getUserDisplay } from "@/lib/user-display";
 import Link from "next/link";
 
 export default function PreviewPage(): any {
-  const { state, refresh, setSpecStatus } = useSpecGateStore();
+  const { state, refresh, setSpecStatus } = useSpecGateQueryStore();
   const filterSpecId =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("specId")
@@ -202,39 +202,21 @@ function PreviewModal({
               <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
               <div className="ml-3 flex-1 rounded-md bg-background/60 px-3 py-1 text-xs text-muted-foreground font-mono truncate">
-                {spec.previewUrl ?? "https://staging.launchos.dev"}
+                {spec.previewUrl ?? "No preview URL"}
               </div>
-              <span className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-200">
-                Demo preview only
-              </span>
             </div>
             <div className="p-6 min-h-[420px]">
-              <div className="max-w-md mx-auto rounded-lg border border-border bg-card p-6 text-foreground">
-                <h3 className="text-lg font-semibold">Team Members</h3>
-                <p className="text-xs text-muted-foreground mt-1">Invite collaborators by email.</p>
-                <div className="mt-5 flex gap-2">
-                  <input
-                    className="flex-1 rounded-md bg-background border border-border px-3 py-2 text-sm"
-                    placeholder="teammate@company.com"
-                  />
-                  <button className="rounded-md bg-primary text-primary-foreground px-3 py-2 text-sm">
-                    Send Invite
-                  </button>
+              {spec.previewUrl ? (
+                <iframe
+                  src={spec.previewUrl}
+                  title={`Preview for ${spec.title}`}
+                  className="h-[420px] w-full rounded-lg border border-border bg-card"
+                />
+              ) : (
+                <div className="flex min-h-[420px] items-center justify-center rounded-lg border border-dashed border-border bg-card text-sm text-muted-foreground">
+                  No preview URL is attached to this spec.
                 </div>
-                <div className="mt-3 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs p-2">
-                  Invite sent. Link expires in 14 days.
-                </div>
-                <div className="mt-5 divide-y divide-border border border-border rounded-md">
-                  {[["Ha", "Owner"], ["David", "Developer"], ["Anna", "Stakeholder"]].map(
-                    ([n, r]) => (
-                      <div key={n} className="flex items-center justify-between px-3 py-2 text-sm">
-                        <span>{n}</span>
-                        <span className="text-xs text-muted-foreground">{r}</span>
-                      </div>
-                    ),
-                  )}
-                </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="border-l border-border bg-card p-4 space-y-4">

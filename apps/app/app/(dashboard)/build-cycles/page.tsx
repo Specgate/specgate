@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { Button } from "@corely/ui";
 import { Progress } from "@corely/ui";
 import { CalendarRange, Sparkles, AlertTriangle } from "lucide-react";
@@ -18,7 +18,7 @@ import { summarizeBuildCycle } from "@/lib/specgate-api";
 import Link from "next/link";
 
 export default function BuildCyclesPage(): any {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   const [open, setOpen] = useState(false);
   const [summary, setSummary] = useState("");
 

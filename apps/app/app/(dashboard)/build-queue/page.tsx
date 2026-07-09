@@ -1,9 +1,8 @@
 "use client";
 
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { PriorityPill, UserAvatar } from "@/components/app/Pills";
-import { users } from "@/lib/reference-data";
 import { AlertTriangle, Bot, GitBranch, Sparkles } from "lucide-react";
 import type { SpecStatus } from "@/types/specgate";
 import Link from "next/link";
@@ -17,7 +16,7 @@ const cols: { key: string; title: string; statuses: SpecStatus[] }[] = [
 ];
 
 export default function BuildQueuePage(): any {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
 
   return (
     <>
@@ -64,7 +63,6 @@ export default function BuildQueuePage(): any {
                     </div>
                   )}
                   {items.map((s) => {
-                    const assignee = users.find((u) => u.id === s.assigneeId);
                     const ms = state.milestones.find((m) => m.id === s.milestoneId);
                     return (
                       <Link
@@ -94,7 +92,7 @@ export default function BuildQueuePage(): any {
                               <GitBranch className="h-3 w-3" />synced
                             </span>
                           )}
-                          {assignee && <UserAvatar name={assignee.name} size={18} />}
+                          {s.assigneeId && <UserAvatar name={s.assigneeId} size={18} />}
                         </div>
                       </Link>
                     );

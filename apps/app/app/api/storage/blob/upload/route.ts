@@ -37,10 +37,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = (await request.json()) as HandleUploadBody;
-  const { tenantId, workspaceId } = getTenantContext(request);
-
   try {
+    const body = (await request.json()) as HandleUploadBody;
+    const { tenantId, workspaceId } = await getTenantContext(request);
     const json = await handleUpload({
       body,
       request,
@@ -75,6 +74,23 @@ export async function POST(request: NextRequest) {
 
     return Response.json(json);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      "status" in error &&
+      typeof (error as { status?: unknown }).status === "number"
+    ) {
+      const status = (error as { status: number }).status;
+      return Response.json(
+        {
+          type: "about:blank",
+          title: status === 401 ? "Unauthorized" : "Forbidden",
+          status,
+          detail: error.message,
+        },
+        { status }
+      );
+    }
+
     const message = error instanceof Error ? error.message : "Unexpected upload error";
 
     return Response.json(

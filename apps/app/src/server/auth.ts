@@ -159,8 +159,8 @@ export async function handleRequestCode(request: Request): Promise<Response> {
   await prisma.portalOtpCode.create({
     data: {
       emailNormalized: email,
-      tenantId: body.tenantId ?? "demo",
-      workspaceId: "demo",
+      tenantId: body.tenantId ?? "pending",
+      workspaceId: "pending",
       codeHash: hashCode(code),
       expiresAt: new Date(Date.now() + OTP_TTL_MINUTES * 60_000),
     },
@@ -198,10 +198,10 @@ export async function handleVerifyCode(request: Request): Promise<Response> {
 
   const prisma = getPrisma();
 
-  const isLocalDemoUser = process.env.NODE_ENV !== "production" && email.endsWith("@example.com");
-  const isDemoBypass = isLocalDemoUser && code === "111111";
+  const isLocalTestUser = process.env.NODE_ENV !== "production" && email.endsWith("@example.com");
+  const isLocalOtpBypass = isLocalTestUser && code === "111111";
 
-  if (!isDemoBypass) {
+  if (!isLocalOtpBypass) {
     const otpRecord = await prisma.portalOtpCode.findFirst({
       where: {
         emailNormalized: email,
@@ -248,11 +248,77 @@ export async function handleVerifyCode(request: Request): Promise<Response> {
     });
   }
 
-  // Find tenant membership
-  const membership = await prisma.membership.findFirst({
+  // Find or create tenant membership.
+  let membership = await prisma.membership.findFirst({
     where: { userId: user.id },
     include: { tenant: true },
   });
+
+  let activeWorkspaceId: string | null = null;
+  if (!membership) {
+    const tenantName =
+      (body.tenantName ?? "").trim() ||
+      `${(user.name ?? user.email.split("@")[0]).trim()}'s workspace`;
+    const slugBase = slugify(tenantName) || "workspace";
+    const uniqueSuffix = crypto.randomUUID().slice(0, 8);
+    const tenant = await prisma.tenant.create({
+      data: {
+        id: crypto.randomUUID(),
+        name: tenantName,
+        slug: `${slugBase}-${uniqueSuffix}`,
+        roles: {
+          create: {
+            id: crypto.randomUUID(),
+            name: "Owner",
+            systemKey: "OWNER",
+            isSystem: true,
+          },
+        },
+        workspaces: {
+          create: {
+            id: crypto.randomUUID(),
+            name: tenantName,
+            slug: `${slugBase}-${uniqueSuffix}`,
+            memberships: {
+              create: {
+                id: crypto.randomUUID(),
+                userId: user.id,
+                role: "OWNER",
+                status: "ACTIVE",
+              },
+            },
+          },
+        },
+      },
+      include: {
+        roles: { where: { systemKey: "OWNER" }, take: 1 },
+        workspaces: { take: 1 },
+      },
+    });
+
+    const ownerRole = tenant.roles[0];
+    if (!ownerRole) {
+      return problem(500, "Internal Server Error", "Unable to create owner role.");
+    }
+
+    membership = await prisma.membership.create({
+      data: {
+        id: crypto.randomUUID(),
+        tenantId: tenant.id,
+        userId: user.id,
+        roleId: ownerRole.id,
+      },
+      include: { tenant: true },
+    });
+    activeWorkspaceId = tenant.workspaces[0]?.id ?? null;
+  } else {
+    const workspace = await prisma.workspace.findFirst({
+      where: { tenantId: membership.tenantId ?? undefined, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    });
+    activeWorkspaceId = workspace?.id ?? null;
+  }
 
   const tenantId = membership?.tenantId ?? null;
   const tenantName = membership?.tenant?.name ?? null;
@@ -281,6 +347,7 @@ export async function handleVerifyCode(request: Request): Promise<Response> {
     email: user.email,
     tenantId,
     tenantName,
+    workspaceId: activeWorkspaceId ?? undefined,
   });
 }
 
@@ -401,4 +468,12 @@ async function deliverOtp(email: string, code: string): Promise<void> {
       text: `Your verification code is: ${code}\n\nIt expires in ${OTP_TTL_MINUTES} minutes.`,
     }),
   });
+}
+
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }

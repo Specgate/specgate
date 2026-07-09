@@ -36,19 +36,16 @@ import type {
   SpecCheck,
   Workspace,
 } from "@/types/specgate";
-import { getUserDisplay } from "./reference-data";
+import { getUserDisplay } from "./user-display";
+import { authClient } from "./auth/auth-client";
 
 type ApiEnvelope<T> = { data: T };
 
-const API_HEADERS = {
-  "x-tenant-id": "tenant_demo",
-  "x-user-id": "u-ha",
-};
-
 function buildHeaders(init: RequestInit = {}) {
   const headers = new Headers(init.headers ?? {});
-  for (const [key, value] of Object.entries(API_HEADERS)) {
-    if (!headers.has(key)) headers.set(key, value);
+  const accessToken = authClient.getAccessToken();
+  if (accessToken && !headers.has("authorization")) {
+    headers.set("authorization", `Bearer ${accessToken}`);
   }
   if (!(init.body instanceof FormData) && !headers.has("content-type")) {
     headers.set("content-type", "application/json");
@@ -310,6 +307,9 @@ export function getUserName(userId?: string | null) {
 }
 
 export async function resetAndSeedDemo() {
+  if (process.env.NEXT_PUBLIC_SPECGATE_DEMO_MODE !== "true") {
+    throw new Error("Demo reset is disabled.");
+  }
   await api<ApiEnvelope<{ reset: true }>>("/demo/reset", { method: "POST" });
   await api<ApiEnvelope<{ seeded: true; projectId: string }>>("/demo/seed", { method: "POST" });
 }
@@ -339,12 +339,6 @@ export async function loadWorkspaceState(options: {
     api<ApiEnvelope<WorkspaceDto[]>>("/workspaces").then((r) => r.data),
     api<ApiEnvelope<ProjectDto[]>>("/projects").then((r) => r.data),
   ]);
-
-  if (projects.length === 0) {
-    await resetAndSeedDemo();
-    workspaces = (await api<ApiEnvelope<WorkspaceDto[]>>("/workspaces")).data;
-    projects = (await api<ApiEnvelope<ProjectDto[]>>("/projects")).data;
-  }
 
   const workspaceId =
     workspaces.find((w) => w.id === options.currentWorkspaceId)?.id ??

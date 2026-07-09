@@ -1,5 +1,57 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import { copyTextToClipboard, downloadTextFile } from './export-utils';
+
+type TestElement = {
+  tagName: string;
+  value: string;
+  href: string;
+  download: string;
+  style: Record<string, string>;
+  setAttribute: (name: string, value: string) => void;
+  focus: () => void;
+  select: () => void;
+  click: () => void;
+};
+
+function createTestElement(tagName: string): TestElement {
+  return {
+    tagName: tagName.toUpperCase(),
+    value: "",
+    href: "",
+    download: "",
+    style: {},
+    setAttribute(name, value) {
+      if (name === "download") this.download = value;
+    },
+    focus: vi.fn(),
+    select: vi.fn(),
+    click: vi.fn(),
+  };
+}
+
+beforeAll(() => {
+  const body = {
+    appendChild: vi.fn((element: TestElement) => element),
+    removeChild: vi.fn((element: TestElement) => element),
+  };
+  const documentMock = {
+    body,
+    createElement: vi.fn((tagName: string) => createTestElement(tagName)),
+    execCommand: vi.fn(() => true),
+  };
+  Object.defineProperty(globalThis, "window", {
+    value: { isSecureContext: true },
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, "document", {
+    value: documentMock,
+    configurable: true,
+  });
+  Object.defineProperty(globalThis, "navigator", {
+    value: {},
+    configurable: true,
+  });
+});
 
 describe('export-utils', () => {
   describe('copyTextToClipboard', () => {

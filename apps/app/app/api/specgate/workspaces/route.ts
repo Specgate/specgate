@@ -1,42 +1,28 @@
 import { handleApi } from "@/server/specgateApi";
+import { getPrisma } from "@/server/prisma";
+import { PrismaWorkspaceRepository } from "@/server/workspaces.repository";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const CreateWorkspaceSchema = z.object({
+  name: z.string().trim().min(1, "name is required"),
+});
+
 // GET /api/specgate/workspaces — list workspaces for current tenant
 export async function GET(request: Request) {
-  return handleApi(request, async ({ ctx, runtime: _runtime }) => {
-    const prisma = (await import("@/server/prisma")).getPrisma();
-    const workspaces = await (prisma as any).workspace.findMany({
-      where: { tenantId: ctx.tenantId, deletedAt: null },
-      orderBy: { createdAt: "asc" },
-      select: { id: true, tenantId: true, name: true, slug: true, createdAt: true, updatedAt: true },
-    });
-    return { data: workspaces };
+  return handleApi(request, async ({ ctx }) => {
+    const repository = new PrismaWorkspaceRepository(getPrisma());
+    return { data: await repository.listForTenant(ctx.tenantId) };
   });
 }
 
 // POST /api/specgate/workspaces — create a workspace
 export async function POST(request: Request) {
   return handleApi(request, async ({ ctx }) => {
-    const body = await request.json().catch(() => ({}));
-    const name = (body?.name as string)?.trim();
-    if (!name) {
-      return Response.json({ error: "name is required" }, { status: 400 });
-    }
-    const prisma = (await import("@/server/prisma")).getPrisma();
-    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const now = new Date();
-    const workspace = await (prisma as any).workspace.create({
-      data: {
-        tenantId: ctx.tenantId,
-        name,
-        slug: `${slug}-${Date.now()}`,
-        createdAt: now,
-        updatedAt: now,
-      },
-      select: { id: true, tenantId: true, name: true, slug: true, createdAt: true, updatedAt: true },
-    });
-    return { data: workspace };
+    const input = CreateWorkspaceSchema.parse(await request.json().catch(() => ({})));
+    const repository = new PrismaWorkspaceRepository(getPrisma());
+    return { data: await repository.createForTenant(ctx.tenantId, input.name) };
   });
 }

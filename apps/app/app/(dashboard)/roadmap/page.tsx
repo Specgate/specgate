@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { StatusPill, PriorityPill } from "@/components/app/Pills";
 import { Button } from "@corely/ui";
 import { Sparkles, AlertTriangle, MoreHorizontal } from "lucide-react";
@@ -28,7 +28,7 @@ import Link from "next/link";
 const lanes: RoadmapLane[] = ["Now", "Next", "Later", "Icebox"];
 
 export default function RoadmapPage(): any {
-  const { state, setSpecLane } = useSpecGateStore();
+  const { state, setSpecLane } = useSpecGateQueryStore();
   const [open, setOpen] = useState(false);
   const [suggestion, setSuggestion] = useState<string>("");
 

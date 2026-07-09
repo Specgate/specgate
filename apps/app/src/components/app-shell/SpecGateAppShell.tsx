@@ -29,7 +29,7 @@ import {
   SelectValue,
   SelectSeparator,
 } from "@corely/ui";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { toast } from "sonner";
 import { NewRequestModal } from "@/components/shared/NewRequestModal";
 import { NewProjectModal } from "@/components/shared/NewProjectModal";
@@ -51,7 +51,7 @@ export function SpecGateAppShell({ children }: { children: any }): any {
   const pathname = usePathname();
   const router = useRouter();
   const { state, loading, error, refresh, setMode, setWorkspace, setProject } =
-    useSpecGateStore();
+    useSpecGateQueryStore();
   const [newRequestOpen, setNewRequestOpen] = useState(false);
   const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [newWorkspaceOpen, setNewWorkspaceOpen] = useState(false);
@@ -61,12 +61,12 @@ export function SpecGateAppShell({ children }: { children: any }): any {
   const workspaces = state.workspaces;
   const workspaceName =
     workspaces.find((w) => w.id === state.currentWorkspaceId)?.name ??
-    "Acme Corp";
+    "No workspace";
   const projects = state.projects.filter(
     (p) => p.workspaceId === state.currentWorkspaceId,
   );
   const projectName =
-    projects.find((p) => p.id === state.currentProjectId)?.name ?? "LaunchOS";
+    projects.find((p) => p.id === state.currentProjectId)?.name ?? "No project";
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -108,9 +108,6 @@ export function SpecGateAppShell({ children }: { children: any }): any {
           <div className="flex items-center justify-between">
             <span className="font-medium text-foreground">
               {projectName} Team
-            </span>
-            <span className="inline-flex items-center rounded-md border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
-              Demo
             </span>
           </div>
           <div>Mode: {state.mode === "team" ? "Team Mode" : "Solo Mode"}</div>

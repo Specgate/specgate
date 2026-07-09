@@ -1,7 +1,7 @@
 "use client";
 
 import { PageHeader } from "@/components/app-shell/SpecGateAppShell";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { StatusPill } from "@/components/app/Pills";
 import { Button } from "@corely/ui";
 import { ExternalLink, GitPullRequest, Rocket, Sparkles } from "lucide-react";
@@ -26,7 +26,7 @@ function Stat({ l, v }: { l: string; v: number }) {
 }
 
 export default function DonePage(): any {
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   const done = state.specs.filter((s) => s.status === "done" || s.status === "accepted");
   const [open, setOpen] = useState(false);
 

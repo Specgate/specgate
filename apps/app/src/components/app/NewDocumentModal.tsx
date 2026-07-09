@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Label, Textarea } from "@corely/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@corely/ui";
-import { useSpecGateStore } from "@/lib/specgate-store";
+import { useSpecGateQueryStore } from "@/lib/specgate-query";
 import { api } from "@/lib/specgate-api";
 import { toast } from "sonner";
 import type { SpecGateDocumentDto } from "@corely/contracts/specgate";
@@ -17,7 +17,7 @@ export function NewDocumentModal({
   onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const { state } = useSpecGateStore();
+  const { state } = useSpecGateQueryStore();
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [type, setType] = useState("product_brief");

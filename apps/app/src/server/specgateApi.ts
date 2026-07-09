@@ -1,5 +1,5 @@
 import { ZodError, type z } from "zod";
-import { createRuntime, getDemoRequestContext } from "./specgate";
+import { createRuntime, getRequestContext } from "./specgate";
 import { problemFromError } from "./problem-details";
 
 export const routeConfig = {
@@ -18,12 +18,12 @@ export async function readJson<TSchema extends z.ZodTypeAny>(
 export async function handleApi(
   request: Request,
   handler: (args: {
-    ctx: ReturnType<typeof getDemoRequestContext>;
+    ctx: Awaited<ReturnType<typeof getRequestContext>>;
     runtime: ReturnType<typeof createRuntime>;
   }) => Promise<unknown>,
 ) {
   try {
-    const ctx = getDemoRequestContext(request);
+    const ctx = await getRequestContext(request);
     const runtime = createRuntime();
     return Response.json(await handler({ ctx, runtime }));
   } catch (error) {
