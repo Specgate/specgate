@@ -445,6 +445,10 @@ async function deliverOtp(email: string, code: string): Promise<void> {
     console.log("\n┌─────────────────────────────────────────┐");
     console.log(`│  🔑 OTP for ${email.padEnd(28)}│`);
     console.log(`│      Code: ${code.padEnd(30)}│`);
+  if (IS_DEV) {
+    console.log("\n┌─────────────────────────────────────────┐");
+    console.log(`│  🔑 OTP for ${email.padEnd(28)}│`);
+    console.log(`│      Code: ${code.padEnd(30)}│`);
     console.log(`│      (expires in ${OTP_TTL_MINUTES} minutes)           │`);
     console.log("└─────────────────────────────────────────┘\n");
     return;
@@ -457,17 +461,27 @@ async function deliverOtp(email: string, code: string): Promise<void> {
   }
 
   const fromAddress = process.env.EMAIL_FROM ?? "noreply@specpilot.app";
-  await fetch("https://api.resend.com/emails", {
+  console.log(`[auth] Sending OTP email to ${email} from ${fromAddress}`);
+
+  const resendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from: fromAddress,
       to: email,
-      subject: `Your SpecPilot verification code: ${code}`,
+      subject: `Your SpecGate verification code: ${code}`,
       html: `<p>Your verification code is: <strong>${code}</strong></p><p>It expires in ${OTP_TTL_MINUTES} minutes.</p>`,
       text: `Your verification code is: ${code}\n\nIt expires in ${OTP_TTL_MINUTES} minutes.`,
     }),
   });
+
+  if (!resendRes.ok) {
+    const resendBody = await resendRes.text().catch(() => "(unreadable)");
+    console.error(`[auth] Resend API error ${resendRes.status}: ${resendBody}`);
+    throw new Error(`Failed to send verification email (Resend ${resendRes.status})`);
+  }
+
+  console.log(`[auth] OTP email sent successfully to ${email}`);
 }
 
 function slugify(value: string): string {
