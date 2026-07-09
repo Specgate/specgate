@@ -9,7 +9,10 @@ export type ObjectStorageFactoryEnv = {
   STORAGE_PROVIDER?: string;
   STORAGE_BUCKET?: string;
   GOOGLE_CLOUD_PROJECT?: string;
+  /** File path to the service account JSON (local dev) */
   GOOGLE_APPLICATION_CREDENTIALS?: string;
+  /** Full service account JSON as a string (Vercel / cloud runtimes) */
+  GOOGLE_APPLICATION_CREDENTIALS_JSON?: string;
   BLOB_READ_WRITE_TOKEN?: string;
   VERCEL_BLOB_ACCESS?: string;
   VERCEL_BLOB_HANDLE_UPLOAD_PATH?: string;
@@ -26,12 +29,13 @@ export function createObjectStorageFromEnv(
   }
 
   if (provider === "gcs") {
+    // Prefer JSON string (Vercel/cloud) over file path (local dev)
+    const credentialsValue =
+      env.GOOGLE_APPLICATION_CREDENTIALS_JSON ?? env.GOOGLE_APPLICATION_CREDENTIALS;
     return new GcsObjectStorageAdapter(
       createGcsClient({
         ...(env.GOOGLE_CLOUD_PROJECT ? { projectId: env.GOOGLE_CLOUD_PROJECT } : {}),
-        ...(env.GOOGLE_APPLICATION_CREDENTIALS
-          ? { keyFilename: env.GOOGLE_APPLICATION_CREDENTIALS }
-          : {}),
+        ...(credentialsValue ? { keyFilename: credentialsValue } : {}),
       }),
       bucketName
     );
