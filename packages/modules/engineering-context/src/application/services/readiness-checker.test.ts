@@ -7,7 +7,7 @@ describe('ReadinessChecker', () => {
     const checker = new ReadinessChecker(new AgentTargetRegistry());
     const result = checker.checkProjectReadiness(
       'p1',
-      { status: 'DRAFT' } as any,
+      { status: 'DRAFT' } as unknown as Parameters<ReadinessChecker['checkProjectReadiness']>[1],
       []
     );
     expect(result.status).toBe('red');
@@ -23,8 +23,8 @@ describe('ReadinessChecker', () => {
         architectureMarkdown: 'test',
         codingConventionsMarkdown: 'test',
         securityRulesMarkdown: '' // missing recommended field
-      } as any,
-      [{ command: 'test' } as any]
+      } as unknown as Parameters<ReadinessChecker['checkProjectReadiness']>[1],
+      [{ command: 'test' } as unknown as Parameters<ReadinessChecker['checkProjectReadiness']>[2][0]]
     );
     expect(result.status).toBe('yellow');
   });
@@ -40,8 +40,8 @@ describe('ReadinessChecker', () => {
         architectureMarkdown: 'test', 
         codingConventionsMarkdown: 'test',
         securityRulesMarkdown: 'test'
-      } as any,
-      [{ command: 'test' } as any]
+      } as unknown as Parameters<ReadinessChecker['checkProjectReadiness']>[1],
+      [{ command: 'test' } as unknown as Parameters<ReadinessChecker['checkProjectReadiness']>[2][0]]
     );
     expect(result.status).toBe('green');
   });
@@ -50,7 +50,7 @@ describe('ReadinessChecker', () => {
   describe('checkSpecReadiness', () => {
     it('returns green when spec has all required and recommended fields', () => {
       const checker = new ReadinessChecker(new AgentTargetRegistry());
-      const projectReadiness = { status: 'green' } as any;
+      const projectReadiness = { status: 'green' } as unknown as Parameters<ReadinessChecker['checkSpecReadiness']>[3];
       const specDetails = {
         status: 'approved',
         acceptanceCriteria: ['Must do X'],
@@ -65,7 +65,7 @@ describe('ReadinessChecker', () => {
 
     it('returns yellow when spec lacks recommended fields', () => {
       const checker = new ReadinessChecker(new AgentTargetRegistry());
-      const projectReadiness = { status: 'green' } as any;
+      const projectReadiness = { status: 'green' } as unknown as Parameters<ReadinessChecker['checkSpecReadiness']>[3];
       const specDetails = {
         status: 'approved',
         acceptanceCriteria: ['Must do X'],
@@ -79,7 +79,7 @@ describe('ReadinessChecker', () => {
 
     it('returns red when spec lacks required fields', () => {
       const checker = new ReadinessChecker(new AgentTargetRegistry());
-      const projectReadiness = { status: 'green' } as any;
+      const projectReadiness = { status: 'green' } as unknown as Parameters<ReadinessChecker['checkSpecReadiness']>[3];
       const specDetails = {
         status: 'approved',
         acceptanceCriteria: [], // Missing required

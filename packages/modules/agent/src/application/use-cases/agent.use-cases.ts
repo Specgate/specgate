@@ -23,11 +23,16 @@ export interface EngineeringContextUseCases {
   };
 }
 
+export interface DocumentsUseCases {
+  listSpecRelatedDocuments(ctx: RequestContext, projectId: string, specId: string): Promise<{ data: Record<string, unknown>[] }>;
+}
+
 export class AgentUseCases {
   constructor(
     private readonly repository: AgentRepositoryPort,
     private readonly specs: SpecsUseCases,
     private readonly engineeringContext?: EngineeringContextUseCases,
+    private readonly documents?: DocumentsUseCases,
   ) {}
 
   async generateAgentContext(
@@ -38,6 +43,15 @@ export class AgentUseCases {
     const snapshot = await this.specs.getApprovedSpecSnapshot(ctx, specId);
     let markdown = generateSpecMarkdown(snapshot);
     
+    if (this.documents) {
+      try {
+        const docs = await this.documents.listSpecRelatedDocuments(ctx, snapshot.projectId, specId);
+        (snapshot as Record<string, unknown>).documents = docs.data;
+      } catch (err) {
+        console.error("Failed to load documents for agent context", err);
+      }
+    }
+
     if (this.engineeringContext) {
       const res = await this.engineeringContext.generateSpecAgentContext.execute(
         ctx.tenantId,

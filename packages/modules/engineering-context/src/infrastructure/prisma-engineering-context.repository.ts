@@ -102,7 +102,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         sortOrder: req.sortOrder ?? 0,
         targetAgentIds: req.targetAgentIds ?? [],
         createdBy: userId,
-      } as any
+      } as import('@prisma/client').Prisma.SpecGateProjectContextRuleUncheckedCreateInput
     });
     return rule as unknown as ProjectContextRuleDto;
   }
@@ -122,7 +122,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         sortOrder: req.sortOrder,
         targetAgentIds: req.targetAgentIds,
         updatedBy: userId,
-      } as any
+      } as import('@prisma/client').Prisma.SpecGateProjectContextRuleUncheckedUpdateInput
     });
     return rule as unknown as ProjectContextRuleDto;
   }
@@ -164,7 +164,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         consequencesMarkdown: req.consequencesMarkdown ?? null,
         supersedesAdrId: req.supersedesAdrId ?? null,
         createdBy: userId,
-      } as any
+      } as import('@prisma/client').Prisma.SpecGateProjectAdrUncheckedCreateInput
     });
     return adr as unknown as ProjectAdrDto;
   }
@@ -182,7 +182,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
         supersedesAdrId: req.supersedesAdrId,
         updatedBy: userId,
         decidedAt: req.status === 'ACCEPTED' ? new Date() : undefined,
-      } as any
+      } as import('@prisma/client').Prisma.SpecGateProjectAdrUncheckedUpdateInput
     });
     return adr as unknown as ProjectAdrDto;
   }
@@ -203,7 +203,7 @@ export class PrismaEngineeringContextRepository implements EngineeringContextRep
 
     await this.prisma.specGateProjectValidationCommand.createMany({
       data: req.commands.map(cmd => ({
-        id: cmd.id as any,
+        id: cmd.id,
         tenantId,
         projectId: req.projectId,
         contextId,

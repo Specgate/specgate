@@ -187,6 +187,11 @@ export class SpecsUseCases {
       summary: input.summary || null,
       audience: input.audience || null,
       description: input.description || null,
+      requestDocumentJson: null,
+      requestPlainText: null,
+      requestMarkdown: null,
+      extractionStatus: "dirty",
+      lastExtractedAt: null,
       status: "request",
       priority: input.priority || "medium",
       roadmapLane: input.roadmapLane || "icebox",
@@ -245,8 +250,12 @@ export class SpecsUseCases {
       "technicalNotes",
       "uiNotes",
     ].some((key) => key in input);
+    const { lastExtractedAt, ...restInput } = input;
     const patch: Partial<SpecRecord> = {
-      ...input,
+      ...restInput,
+      ...(lastExtractedAt !== undefined && {
+        lastExtractedAt: lastExtractedAt ? new Date(lastExtractedAt) : null,
+      }),
       summary: input.summary === undefined ? undefined : input.summary || null,
       audience:
         input.audience === undefined ? undefined : input.audience || null,
@@ -595,11 +604,10 @@ export class SpecsUseCases {
       "image/png",
       "image/jpeg",
       "image/webp",
-      "image/gif",
     ]);
     if (!allowedTypes.has(input.contentType)) {
       throw new ValidationError(
-        "Unsupported file type. Please upload PNG, JPG, WebP, or GIF.",
+        "Unsupported file type. Please upload PNG, JPG, or WebP.",
       );
     }
     if (input.sizeBytes > 10 * 1024 * 1024) {

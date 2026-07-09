@@ -15,6 +15,7 @@ import {
   Plus,
   Compass,
   Sparkles,
+  FileText,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@corely/ui/utils";
@@ -37,6 +38,7 @@ import { NewWorkspaceModal } from "@/components/shared/NewWorkspaceModal";
 const nav = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/backlog", label: "Backlog", icon: Inbox },
+  { href: "/documents", label: "Documents", icon: FileText },
   { href: "/roadmap", label: "Roadmap", icon: MapIcon },
   { href: "/build-queue", label: "Build Queue", icon: ListChecks },
   { href: "/build-cycles", label: "Build Cycles", icon: CalendarRange },
@@ -335,10 +337,10 @@ export function PageHeader({
   description,
   actions,
 }: {
-  title: string;
+  title: string | React.ReactNode;
   description?: string;
-  actions?: any;
-}): any {
+  actions?: React.ReactNode;
+}): React.ReactNode {
   return (
     <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between border-b border-border px-6 py-6">
       <div>

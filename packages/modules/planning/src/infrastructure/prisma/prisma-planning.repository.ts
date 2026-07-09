@@ -6,10 +6,10 @@ import type {
 import type { PlanningRepositoryPort } from "../../application/ports/planning-repository.port";
 
 type ModelClient = {
-  findMany(args?: unknown): Promise<any[]>;
-  findFirst(args?: unknown): Promise<any | null>;
-  create(args: unknown): Promise<any>;
-  update(args: unknown): Promise<any>;
+  findMany(args?: unknown): Promise<Record<string, unknown>[]>;
+  findFirst(args?: unknown): Promise<Record<string, unknown> | null>;
+  create(args: unknown): Promise<Record<string, unknown>>;
+  update(args: unknown): Promise<Record<string, unknown>>;
 };
 
 type PrismaClientShape = {
@@ -115,13 +115,13 @@ export class PrismaPlanningRepository implements PlanningRepositoryPort {
     return item ? this.updateBuildQueueItem(tenantId, item.id, patch) : null;
   }
 
-  private mapMilestone(row: any): MilestoneRecord {
-    return row;
+  private mapMilestone(row: Record<string, unknown>): MilestoneRecord {
+    return row as unknown as MilestoneRecord;
   }
-  private mapBuildCycle(row: any): BuildCycleRecord {
-    return row;
+  private mapBuildCycle(row: Record<string, unknown>): BuildCycleRecord {
+    return row as unknown as BuildCycleRecord;
   }
-  private mapBuildQueueItem(row: any): BuildQueueItemRecord {
-    return row;
+  private mapBuildQueueItem(row: Record<string, unknown>): BuildQueueItemRecord {
+    return row as unknown as BuildQueueItemRecord;
   }
 }

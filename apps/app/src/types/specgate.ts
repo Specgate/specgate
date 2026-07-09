@@ -120,6 +120,8 @@ export interface Spec {
   ownerId: string;
   assigneeId?: string;
   summary: string;
+  requestDocumentJson?: unknown;
+  requestPlainText?: string | null;
   audience?: string;
   background?: string;
   currentBehavior?: string;

@@ -17,7 +17,7 @@ export interface LanguageModelPort {
     environment?: string;
     intent?: string;
     observability: ObservabilitySpanRef;
-  }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }>;
+  }): Promise<{ result: StreamTextResult<Record<string, unknown>, unknown>; usage?: LanguageModelUsage }>;
 
   generateStructuredData<T>(params: {
     promptId: string;

@@ -15,7 +15,7 @@ export interface GenerateSpecAgentContextUseCaseDeps {
 export class GenerateSpecAgentContextUseCase {
   constructor(private deps: GenerateSpecAgentContextUseCaseDeps) {}
 
-  async execute(tenantId: string, userId: string, projectId: string, specId: string, targetAgentId: string | undefined, specDetails: Record<string, any>): Promise<{ markdown: string }> {
+  async execute(tenantId: string, userId: string, projectId: string, specId: string, targetAgentId: string | undefined, specDetails: Record<string, unknown>): Promise<{ markdown: string }> {
     const context = await this.deps.engineeringContextRepository.getEngineeringContext(tenantId, projectId);
     if (!context) {
       throw new EngineeringContextNotFoundError(projectId);

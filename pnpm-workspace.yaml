@@ -44,6 +44,11 @@ catalog:
   '@vercel/blob': ^2.0.0
   '@vercel/functions': ^2.2.13
   '@vitest/coverage-v8': ^2.1.4
+  '@tiptap/extension-image': ^3.27.3
+  '@tiptap/extension-placeholder': ^3.27.3
+  '@tiptap/pm': ^3.27.3
+  '@tiptap/react': ^3.27.3
+  '@tiptap/starter-kit': ^3.27.3
   ai: ^6.0.116
   autoprefixer: ^10.4.21
   bcrypt: ^5.1.1

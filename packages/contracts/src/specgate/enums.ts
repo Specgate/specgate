@@ -93,5 +93,14 @@ export const ActivityTypeSchema = z.enum([
   "preview_commented",
   "preview_rejected",
   "spec_marked_done",
+  "document_created",
+  "document_updated",
+  "document_archived",
+  "document_deleted",
+  "document_asset_uploaded",
+  "document_asset_deleted",
+  "document_linked_to_spec",
+  "document_unlinked_from_spec",
+  "document_included_in_agent_context",
 ]);
 export type ActivityType = z.infer<typeof ActivityTypeSchema>;

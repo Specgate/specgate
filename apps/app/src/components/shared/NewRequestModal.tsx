@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { Priority, RoadmapLane } from "@/types/specgate";
 
-export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }): any {
+export function NewRequestModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }): React.ReactNode {
   const { state, addSpec } = useSpecGateStore();
   const router = useRouter();
   const [title, setTitle] = useState("");

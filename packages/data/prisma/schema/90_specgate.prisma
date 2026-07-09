@@ -17,6 +17,7 @@ model SpecGateProject {
   workspace Workspace?       @relation(fields: [workspaceId], references: [id])
   specs     SpecGateSpec[]
   engineeringContexts SpecGateEngineeringContext[]
+  documents SpecGateDocument[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
@@ -81,6 +82,7 @@ model SpecGateSpec {
   decisions SpecGateDecision[]
   assets    SpecGateSpecAsset[]
   proposals SpecGateCopilotProposal[]
+  documentLinks SpecGateSpecDocumentLink[]
 
   @@unique([tenantId, projectId, specNumber])
   @@index([tenantId])

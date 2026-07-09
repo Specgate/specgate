@@ -1,4 +1,4 @@
-import type { RoadmapLane, SpecListQuery } from "@corely/contracts/specgate";
+import type { RoadmapLane, SpecListQuery, SpecStatus, SpecPriority } from "@corely/contracts/specgate";
 import type {
   CommentRecord,
   DecisionRecord,
@@ -14,12 +14,13 @@ import type {
 } from "../../application/ports/specs-repository.port";
 
 type ModelClient = {
-  findMany(args?: unknown): Promise<any[]>;
-  findFirst(args?: unknown): Promise<any | null>;
-  create(args: unknown): Promise<any>;
-  update(args: unknown): Promise<any>;
+  findMany(args?: unknown): Promise<Record<string, unknown>[]>;
+  findFirst(args?: unknown): Promise<Record<string, unknown> | null>;
+  create(args: unknown): Promise<Record<string, unknown>>;
+  update(args: unknown): Promise<Record<string, unknown>>;
   count(args?: unknown): Promise<number>;
-  groupBy?(args: unknown): Promise<any[]>;
+  groupBy?(args: unknown): Promise<Record<string, unknown>[]>;
+  delete?(args: unknown): Promise<Record<string, unknown>>;
 };
 
 type PrismaClientShape = {
@@ -41,7 +42,7 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
   constructor(private readonly prisma: PrismaClientShape) {}
 
   listProjects(tenantId: string, workspaceId?: string): Promise<ProjectRecord[]> {
-    const where: any = { tenantId };
+    const where: Record<string, unknown> = { tenantId };
     if (workspaceId) where.workspaceId = workspaceId;
     return this.prisma.specGateProject
       .findMany({ where, orderBy: { createdAt: "asc" } })
@@ -297,7 +298,7 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
   async deleteSpecAsset(tenantId: string, assetId: string): Promise<void> {
     const existing = await this.findSpecAsset(tenantId, assetId);
     if (!existing) return;
-    await (this.prisma.specGateSpecAsset as any).delete({ where: { id: assetId } });
+    await this.prisma.specGateSpecAsset.delete!({ where: { id: assetId } });
   }
 
   async countCommentsBySpecIds(
@@ -332,16 +333,16 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
     });
     const latest = new Map<string, SpecCodeCheckSummaryRecord>();
     for (const row of rows) {
-      if (latest.has(row.specId)) continue;
-      latest.set(row.specId, {
-        id: row.id,
-        tenantId: row.tenantId,
-        projectId: row.projectId,
-        specId: row.specId,
-        status: row.status,
-        summary: row.summary,
-        createdBy: row.createdBy,
-        createdAt: row.createdAt,
+      if (latest.has(row.specId as string)) continue;
+      latest.set(row.specId as string, {
+        id: row.id as string,
+        tenantId: row.tenantId as string,
+        projectId: row.projectId as string,
+        specId: row.specId as string,
+        status: row.status as string,
+        summary: row.summary as string,
+        createdBy: row.createdBy as string,
+        createdAt: row.createdAt as Date,
       });
     }
     return latest;
@@ -379,7 +380,7 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
       where: { tenantId, specId: { in: specIds } },
       _count: { _all: true },
     });
-    return new Map(rows.map((row) => [row.specId, row._count._all]));
+    return new Map(rows.map((row) => [row.specId as string, (row._count as Record<string, number>)._all]));
   }
 
   private async maxCreatedAtBySpecIds(
@@ -395,8 +396,8 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
     });
     return new Map(
       rows
-        .filter((row) => row._max.createdAt)
-        .map((row) => [row.specId, row._max.createdAt]),
+        .filter((row) => (row._max as Record<string, Date>).createdAt)
+        .map((row) => [row.specId as string, (row._max as Record<string, Date>).createdAt]),
     );
   }
 
@@ -423,67 +424,67 @@ export class PrismaSpecsRepository implements SpecsRepositoryPort {
     };
   }
 
-  private mapProject(row: any): ProjectRecord {
-    return row;
+  private mapProject(row: Record<string, unknown>): ProjectRecord {
+    return row as unknown as ProjectRecord;
   }
 
-  private mapSpec(row: any): SpecRecord {
+  private mapSpec(row: Record<string, unknown>): SpecRecord {
     return {
-      id: row.id,
-      tenantId: row.tenantId,
-      projectId: row.projectId,
-      specNumber: row.specNumber,
-      title: row.title,
-      slug: row.slug,
-      summary: row.summary,
-      audience: row.audience,
-      description: row.description,
-      status: row.status,
-      priority: row.priority,
-      roadmapLane: row.roadmapLane,
-      targetMilestoneId: row.targetMilestoneId,
-      buildCycleId: row.buildCycleId,
-      ownerId: row.ownerId,
-      assigneeId: row.assigneeId,
-      approvedVersionId: row.approvedVersionId,
-      approvedBy: row.approvedBy,
-      approvedAt: row.approvedAt,
-      acceptedBy: row.acceptedBy,
-      acceptedAt: row.acceptedAt,
-      doneAt: row.doneAt,
-      background: row.background,
-      currentBehavior: row.currentBehavior,
-      desiredOutcome: row.desiredOutcome,
+      id: row.id as string,
+      tenantId: row.tenantId as string,
+      projectId: row.projectId as string,
+      specNumber: row.specNumber as string,
+      title: row.title as string,
+      slug: row.slug as string,
+      summary: row.summary as string | null,
+      audience: row.audience as string | null,
+      description: row.description as string | null,
+      status: row.status as SpecStatus,
+      priority: row.priority as SpecPriority,
+      roadmapLane: row.roadmapLane as RoadmapLane,
+      targetMilestoneId: row.targetMilestoneId as string | null,
+      buildCycleId: row.buildCycleId as string | null,
+      ownerId: row.ownerId as string | null,
+      assigneeId: row.assigneeId as string | null,
+      approvedVersionId: row.approvedVersionId as string | null,
+      approvedBy: row.approvedBy as string | null,
+      approvedAt: row.approvedAt as Date | null,
+      acceptedBy: row.acceptedBy as string | null,
+      acceptedAt: row.acceptedAt as Date | null,
+      doneAt: row.doneAt as Date | null,
+      background: row.background as string | null,
+      currentBehavior: row.currentBehavior as string | null,
+      desiredOutcome: row.desiredOutcome as string | null,
       acceptanceCriteria: asStringArray(row.acceptanceCriteriaJson),
       outOfScope: asStringArray(row.outOfScopeJson),
       openQuestions: asStringArray(row.openQuestionsJson),
       relatedFiles: asStringArray(row.relatedFilesJson),
       edgeCases: asStringArray(row.edgeCasesJson),
-      securityNotes: row.securityNotes,
+      securityNotes: row.securityNotes as string | null,
       suggestedSearchTerms: asStringArray(row.suggestedSearchTermsJson),
       verificationPlan: asStringArray(row.verificationPlanJson),
-      technicalNotes: row.technicalNotes,
-      uiNotes: row.uiNotes,
-      createdBy: row.createdBy,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
+      technicalNotes: row.technicalNotes as string | null,
+      uiNotes: row.uiNotes as string | null,
+      createdBy: row.createdBy as string,
+      createdAt: row.createdAt as Date,
+      updatedAt: row.updatedAt as Date,
       requestDocumentJson: row.requestDocumentJson,
-      requestPlainText: row.requestPlainText,
-      requestMarkdown: row.requestMarkdown,
-      extractionStatus: row.extractionStatus,
-      lastExtractedAt: row.lastExtractedAt,
+      requestPlainText: row.requestPlainText as string | null,
+      requestMarkdown: row.requestMarkdown as string | null,
+      extractionStatus: row.extractionStatus as SpecRecord['extractionStatus'],
+      lastExtractedAt: row.lastExtractedAt as Date | null,
     };
   }
 
-  private mapComment(row: any): CommentRecord {
-    return row;
+  private mapComment(row: Record<string, unknown>): CommentRecord {
+    return row as unknown as CommentRecord;
   }
 
-  private mapDecision(row: any): DecisionRecord {
-    return row;
+  private mapDecision(row: Record<string, unknown>): DecisionRecord {
+    return row as unknown as DecisionRecord;
   }
 
-  private mapSpecAsset(row: any): SpecAssetRecord {
-    return row;
+  private mapSpecAsset(row: Record<string, unknown>): SpecAssetRecord {
+    return row as unknown as SpecAssetRecord;
   }
 }

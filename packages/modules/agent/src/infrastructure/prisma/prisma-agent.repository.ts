@@ -5,16 +5,16 @@ import type {
 } from "../../domain/entities/agent";
 import type { AgentRepositoryPort } from "../../application/ports/agent-repository.port";
 
-type ModelClient = {
-  findMany(args?: unknown): Promise<any[]>;
-  findFirst(args?: unknown): Promise<any | null>;
-  create(args: unknown): Promise<any>;
+type ModelClient<T = Record<string, unknown>> = {
+  findMany(args?: unknown): Promise<T[]>;
+  findFirst(args?: unknown): Promise<T | null>;
+  create(args: unknown): Promise<T>;
 };
 
 type PrismaClientShape = {
-  specGateAgentContext: ModelClient;
-  gitSyncRecord: ModelClient;
-  specGateSpecCodeCheck: ModelClient;
+  specGateAgentContext: ModelClient<AgentContextRecord>;
+  gitSyncRecord: ModelClient<GitSyncRecord>;
+  specGateSpecCodeCheck: ModelClient<SpecCodeCheckRecord & { mismatchFindingsJson: unknown }>;
 };
 
 export class PrismaAgentRepository implements AgentRepositoryPort {
@@ -53,10 +53,10 @@ export class PrismaAgentRepository implements AgentRepositoryPort {
       })
       .then((row) => (row ? this.mapSpecCodeCheck(row) : null));
   }
-  private mapAgentContext(row: any): AgentContextRecord {
+  private mapAgentContext(row: AgentContextRecord): AgentContextRecord {
     return row;
   }
-  private mapSpecCodeCheck(row: any): SpecCodeCheckRecord {
+  private mapSpecCodeCheck(row: SpecCodeCheckRecord & { mismatchFindingsJson: unknown }): SpecCodeCheckRecord {
     return {
       ...row,
       mismatchFindings: Array.isArray(row.mismatchFindingsJson)

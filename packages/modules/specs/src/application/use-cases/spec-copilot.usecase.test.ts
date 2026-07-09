@@ -4,7 +4,7 @@ import { ActivityPublisherPort } from "../ports/specs-repository.port";
 
 describe("SpecCopilotUseCase", () => {
   it("proposeChanges uses languageModel correctly", async () => {
-    const mockSpecsRepo: any = {
+    const mockSpecsRepo = {
       findSpec: vi.fn().mockResolvedValue({
         id: "s1",
         title: "Test Spec",
@@ -18,13 +18,13 @@ describe("SpecCopilotUseCase", () => {
       updateSpec: vi.fn(),
     };
 
-    const mockLanguageModel: any = {
+    const mockLanguageModel = {
       generateStructuredData: vi.fn().mockResolvedValue({
         proposedChanges: [{ field: "acceptanceCriteria", operation: "append", after: "New criteria" }]
       }),
     };
 
-    const useCase = new SpecCopilotUseCase(mockSpecsRepo, mockLanguageModel);
+    const useCase = new SpecCopilotUseCase(mockSpecsRepo as unknown as import("../ports/specs-repository.port").SpecsRepositoryPort, mockLanguageModel as unknown as import("./spec-copilot.usecase").SpecCopilotModelPort);
 
     const proposal = await useCase.proposeChanges("tenant-1", { specId: "s1", action: "improve_spec" });
 
@@ -35,7 +35,7 @@ describe("SpecCopilotUseCase", () => {
   });
 
   it("applyProposal strictly validates fields, operations, and selections", async () => {
-    const mockSpecsRepo: any = {
+    const mockSpecsRepo = {
       findSpec: vi.fn().mockResolvedValue({
         id: "s1",
         projectId: "p1",
@@ -51,15 +51,15 @@ describe("SpecCopilotUseCase", () => {
       updateSpec: vi.fn(),
     };
 
-    const mockLanguageModel: any = {
+    const mockLanguageModel = {
       generateStructuredData: vi.fn(),
     };
 
-    const mockActivity: any = {
+    const mockActivity = {
       publish: vi.fn(),
     };
 
-    const useCase = new SpecCopilotUseCase(mockSpecsRepo, mockLanguageModel, mockActivity);
+    const useCase = new SpecCopilotUseCase(mockSpecsRepo as unknown as import("../ports/specs-repository.port").SpecsRepositoryPort, mockLanguageModel as unknown as import("./spec-copilot.usecase").SpecCopilotModelPort, mockActivity as unknown as ActivityPublisherPort);
 
     const proposal = {
       id: "p1",
@@ -80,7 +80,7 @@ describe("SpecCopilotUseCase", () => {
       selectedChanges: ["acceptanceCriteria", "background", "outOfScope", "title", "unknown_field"] 
     };
 
-    await useCase.applyProposal("tenant-1", request, proposal as any, "user-1");
+    await useCase.applyProposal("tenant-1", request, proposal as unknown as import('@corely/contracts/specgate').SpecCopilotProposalDto, "user-1");
 
     expect(mockSpecsRepo.updateSpec).toHaveBeenCalledWith("tenant-1", "s1", {
       background: "Old background\\nNew context",

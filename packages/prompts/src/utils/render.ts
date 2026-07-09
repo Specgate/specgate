@@ -2,6 +2,8 @@ import {
   type PromptRenderResult,
   type PromptVersionDefinition,
   type PromptVariableKind,
+  type PromptVariableValue,
+  type PromptVariablesMap,
 } from "../types";
 import { RENDER_ENGINE_VERSION } from "./hash";
 import { stableStringify } from "./hash";
@@ -26,13 +28,13 @@ const extractPlaceholders = (template: string): Placeholder[] => {
   return matches;
 };
 
-const normalizeText = (value: unknown) =>
+const normalizeText = (value: PromptVariableValue | undefined) =>
   String(value ?? "")
     .replace(/\r?\n/g, " ")
     .trim();
-const normalizeBlock = (value: unknown) => String(value ?? "");
+const normalizeBlock = (value: PromptVariableValue | undefined) => String(value ?? "");
 
-const renderValue = (key: string, kind: PromptVariableKind, value: unknown) => {
+const renderValue = (key: string, kind: PromptVariableKind, value: PromptVariableValue | undefined) => {
   if (kind === "json") {
     if (typeof value === "string") {
       return value;
@@ -61,7 +63,7 @@ const resolveVariableKind = (
 export const renderPrompt = (
   promptId: string,
   version: PromptVersionDefinition,
-  variables: Record<string, unknown>
+  variables: PromptVariablesMap
 ): PromptRenderResult => {
   const parsed = version.variablesSchema.parse(variables ?? {});
   const template = version.template;

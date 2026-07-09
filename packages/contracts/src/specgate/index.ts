@@ -8,3 +8,4 @@ export * from "./preview";
 export * from "./activity";
 export * from "./engineering-context";
 export * from "./copilot.contracts";
+export * from "./documents";

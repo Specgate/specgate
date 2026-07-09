@@ -31,13 +31,15 @@ function hashCode(code: string): string {
 
 // ── JWT (simple HS256 via Web Crypto) ──────────────────────────────────────
 
+type JwtPayload = { sub?: string; iat?: number; exp?: number; email?: string; tenantId?: string | null; [key: string]: string | number | boolean | null | undefined };
+
 function base64url(buf: Buffer | string): string {
   const b = Buffer.isBuffer(buf) ? buf : Buffer.from(buf);
   return b.toString("base64url");
 }
 
 async function signJwt(
-  payload: Record<string, unknown>,
+  payload: JwtPayload,
   expiresInSec: number
 ): Promise<string> {
   const header = base64url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
@@ -58,7 +60,7 @@ async function signJwt(
 
 export async function verifyJwt(
   token: string
-): Promise<Record<string, unknown> | null> {
+): Promise<JwtPayload | null> {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
@@ -77,7 +79,7 @@ export async function verifyJwt(
       Buffer.from(`${header}.${body}`)
     );
     if (!valid) return null;
-    const decoded = JSON.parse(Buffer.from(body, "base64url").toString()) as Record<string, unknown>;
+    const decoded = JSON.parse(Buffer.from(body, "base64url").toString()) as JwtPayload;
     if (typeof decoded.exp === "number" && decoded.exp < Math.floor(Date.now() / 1000)) return null;
     return decoded;
   } catch {

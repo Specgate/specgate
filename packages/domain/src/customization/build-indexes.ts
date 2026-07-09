@@ -89,8 +89,8 @@ function extractAmount(value: unknown): number {
       return parsed;
     }
   }
-  if (typeof value === "object" && value !== null) {
-    const amount = (value as any).amountCents;
+  if (typeof value === "object" && value !== null && "amountCents" in value) {
+    const amount = (value as Record<string, unknown>).amountCents;
     if (typeof amount === "number") {
       return amount;
     }

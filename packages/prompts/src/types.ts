@@ -51,6 +51,9 @@ export interface PromptResolvedDefinition {
   promptHash: string;
 }
 
+export type PromptVariableValue = string | number | boolean | null | { [key: string]: PromptVariableValue } | PromptVariableValue[];
+export type PromptVariablesMap = Record<string, PromptVariableValue | undefined>;
+
 export interface PromptRenderResult {
   promptId: string;
   promptVersion: string;
@@ -58,7 +61,7 @@ export interface PromptRenderResult {
   renderEngineVersion: string;
   template: string;
   content: string;
-  variables: Record<string, unknown>;
+  variables: PromptVariablesMap;
 }
 
 export interface PromptProviderPort {

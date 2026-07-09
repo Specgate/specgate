@@ -7,7 +7,7 @@ type LovableErrorOptions = {
 type LovableEvents = {
   captureException?: (
     error: unknown,
-    context?: Record<string, unknown>,
+    context?: ErrorContext,
     options?: LovableErrorOptions,
   ) => void;
 };
@@ -18,7 +18,9 @@ declare global {
   }
 }
 
-export function reportLovableError(error: unknown, context: Record<string, unknown> = {}) {
+export type ErrorContext = { source?: string; route?: string; componentStack?: string; [key: string]: string | number | boolean | object | null | undefined };
+
+export function reportLovableError(error: unknown, context: ErrorContext = {}) {
   if (typeof window === "undefined") return;
   window.__lovableEvents?.captureException?.(
     error,

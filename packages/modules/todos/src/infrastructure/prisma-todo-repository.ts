@@ -2,13 +2,26 @@ import type { TodoListQuery } from "@corely/contracts";
 import { Todo, type TodoPriority, type TodoStatus } from "../domain/todo.entity";
 import type { TodoRepositoryPort } from "../application/ports/todo-repository.port";
 
+type TodoRow = {
+  id: string;
+  tenantId: string;
+  workspaceId: string | null;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  dueDate: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 type TodoPrismaClient = {
   todo: {
-    findFirst(args: unknown): Promise<any>;
-    upsert(args: unknown): Promise<any>;
-    deleteMany(args: unknown): Promise<any>;
-    findMany(args: unknown): Promise<any[]>;
-    count(args: unknown): Promise<number>;
+    findFirst(args: Record<string, unknown>): Promise<TodoRow | null>;
+    upsert(args: Record<string, unknown>): Promise<TodoRow>;
+    deleteMany(args: Record<string, unknown>): Promise<{ count: number }>;
+    findMany(args: Record<string, unknown>): Promise<TodoRow[]>;
+    count(args: Record<string, unknown>): Promise<number>;
   };
 };
 

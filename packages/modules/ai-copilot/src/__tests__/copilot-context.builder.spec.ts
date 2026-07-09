@@ -28,8 +28,8 @@ describe("CopilotContextBuilder", () => {
 
     expect(context[0].role).toBe("system");
     expect(context[0].parts?.[0]?.type).toBe("text");
-    expect((context[0].parts?.[0] as any).text).toContain("Untrusted user context");
-    expect((context[0].parts?.[0] as any).text).toContain("Original request");
+    expect((context[0].parts?.[0] as Record<string, unknown>).text).toContain("Untrusted user context");
+    expect((context[0].parts?.[0] as Record<string, unknown>).text).toContain("Original request");
     expect(context[1]).toEqual(messages[0]);
   });
 

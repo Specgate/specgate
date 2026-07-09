@@ -103,7 +103,7 @@ describe("StreamCopilotChatUseCase persistence", () => {
       ],
     };
 
-    const saveCalls: Array<{ messages: CopilotUIMessage[]; metadata?: any }> = [];
+    const saveCalls: Array<{ messages: CopilotUIMessage[]; metadata?: unknown }> = [];
     const chatStore: ChatStorePort = {
       load: vi.fn(async () => ({ messages: [userMessage, toolCallMessage] })),
       save: vi.fn(async (params) => {
@@ -123,13 +123,13 @@ describe("StreamCopilotChatUseCase persistence", () => {
                   controller.close();
                 },
               }),
-          } as any,
+          } as unknown as ReturnType<LanguageModelPort["streamChat"]> extends Promise<{ result: infer R }> ? R : never,
         };
       }),
     };
 
     const agentRuns: AgentRunRepositoryPort = {
-      create: vi.fn(async () => ({ id: "run-1" }) as any),
+      create: vi.fn(async () => ({ id: "run-1" }) as unknown as ReturnType<AgentRunRepositoryPort["create"]>),
       updateStatus: vi.fn(async () => undefined),
       findById: vi.fn(async () => null),
     };
@@ -165,8 +165,8 @@ describe("StreamCopilotChatUseCase persistence", () => {
     const spanRef: ObservabilitySpanRef = {
       traceId: "trace-1",
       spanId: "span-1",
-      span: {} as any,
-      context: {} as any,
+      span: {} as import("@opentelemetry/api").Span,
+      context: {} as import("@opentelemetry/api").Context,
     };
 
     const observability: ObservabilityPort = {
@@ -202,7 +202,7 @@ describe("StreamCopilotChatUseCase persistence", () => {
       userId: "user-1",
       idempotencyKey: "idem-1",
       runId: "run-1",
-      response: {} as any,
+      response: {} as import("express").Response,
       requestId: "request-1",
       workspaceId: "workspace-1",
       toolTenantId: "tenant-1",
@@ -233,8 +233,8 @@ describe("StreamCopilotChatUseCase persistence", () => {
         message.parts?.some(
           (part) =>
             part.type === "tool-result" &&
-            (part as any).toolCallId === "tool-1" &&
-            (part as any).output?.values?.dueDate === "2025-01-31"
+            (part as Record<string, unknown>).toolCallId === "tool-1" &&
+            ((part as Record<string, unknown>).output as Record<string, Record<string, unknown>>)?.values?.dueDate === "2025-01-31"
         )
       )
     );

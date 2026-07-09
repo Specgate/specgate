@@ -8,8 +8,8 @@ export function SpecEditor({
   onPlainTextChange,
   readOnly = false,
 }: {
-  value: any;
-  onChange: (value: any) => void;
+  value: unknown;
+  onChange: (value: unknown) => void;
   onPlainTextChange: (text: string) => void;
   readOnly?: boolean;
 }) {

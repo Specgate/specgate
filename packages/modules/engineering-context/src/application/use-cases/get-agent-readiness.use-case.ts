@@ -10,7 +10,7 @@ export interface GetAgentReadinessUseCaseDeps {
 export class GetAgentReadinessUseCase {
   constructor(private deps: GetAgentReadinessUseCaseDeps) {}
 
-  async execute(tenantId: string, projectId: string, specId?: string, specDetails?: Record<string, any>): Promise<AgentReadinessCheckDto> {
+  async execute(tenantId: string, projectId: string, specId?: string, specDetails?: Record<string, unknown>): Promise<AgentReadinessCheckDto> {
     const context = await this.deps.engineeringContextRepository.getEngineeringContext(tenantId, projectId);
     
     // We fetch validation commands too, since the readiness checker needs them

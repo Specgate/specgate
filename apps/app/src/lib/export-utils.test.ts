@@ -3,7 +3,7 @@ import { copyTextToClipboard, downloadTextFile } from './export-utils';
 
 describe('export-utils', () => {
   describe('copyTextToClipboard', () => {
-    let originalClipboard: any;
+    let originalClipboard: unknown;
 
     beforeEach(() => {
       originalClipboard = navigator.clipboard;

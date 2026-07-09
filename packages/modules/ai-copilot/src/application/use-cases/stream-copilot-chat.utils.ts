@@ -6,8 +6,8 @@ export const isUniqueConstraintError = (error: unknown): boolean =>
   Boolean(
     error &&
     typeof error === "object" &&
-    "code" in (error as Record<string, unknown>) &&
-    (error as { code?: string }).code === "P2002"
+    "code" in error &&
+    (error as Record<string, unknown>).code === "P2002"
   );
 
 export const extractAssistantText = (message: CopilotUIMessage): string | undefined => {
@@ -29,21 +29,22 @@ export const normalizeMessages = (messages: CopilotUIMessage[]): NormalizedMessa
   messages.map((msg) => {
     const parts =
       msg.parts?.map((part) => {
+        const partObj = part as Record<string, unknown>;
         if (part.type === "text") {
-          return { type: "text", text: (part as any).text } as const;
+          return { type: "text", text: partObj.text as string } as const;
         }
         if (String(part.type).startsWith("tool-")) {
           return {
             type: "tool-call",
-            toolCallId: (part as any).toolCallId,
-            toolName: (part as any).toolName,
-            input: (part as any).input as JsonValue,
+            toolCallId: partObj.toolCallId as string,
+            toolName: partObj.toolName as string,
+            input: partObj.input as JsonValue,
           } as const;
         }
         if (String(part.type).startsWith("data-")) {
           return {
             type: "data",
-            text: typeof (part as any).data === "string" ? (part as any).data : undefined,
+            text: typeof partObj.data === "string" ? partObj.data : undefined,
           } as const;
         }
         return { type: "text", text: "" } as const;

@@ -28,6 +28,7 @@ import {
   DeterministicAgentExportGenerator,
   EngineeringContextUseCases,
 } from "@corely/modules-engineering-context";
+import { DocumentsUseCases, PrismaDocumentRepository } from "@corely/modules-documents";
 import { getPrisma } from "./prisma";
 import { getObjectStorage } from "./object-storage";
 
@@ -97,6 +98,11 @@ export function createRuntime() {
     preview: new PreviewUseCases(new PrismaPreviewRepository(prisma), specs),
     engineeringContext,
     activity,
+    documents: new DocumentsUseCases(
+      new PrismaDocumentRepository(prisma),
+      activityPublisher,
+      objectStorage
+    ),
     demo: createDemoRuntime(prisma),
   };
 }

@@ -148,7 +148,7 @@ async function parseResponse<T>(response: Response, parseJson: boolean): Promise
     return undefined as T;
   }
   if (!parseJson) {
-    return response as unknown as T;
+    return response as T;
   }
   return (await response.json()) as T;
 }

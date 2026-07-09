@@ -265,7 +265,7 @@ import { NoopOutbox } from "../../shared/noop/noop-outbox";
             execute: async ({ workspaceId, input }) => {
               if (!workspaceId) return { error: "No workspace ID" };
               const asset = await prisma.launchOsAsset.findFirst({
-                where: { workspaceId, label: { contains: (input as any).label, mode: "insensitive" } },
+                where: { workspaceId, label: { contains: (input as { label: string }).label, mode: "insensitive" } },
               });
               return asset ? { asset } : { error: "Asset not found" };
             },
@@ -277,7 +277,7 @@ import { NoopOutbox } from "../../shared/noop/noop-outbox";
             kind: "server",
             needsApproval: false,
             execute: async ({ input }) => {
-              return { draft: `Draft asset for ${(input as any).type}: ${(input as any).prompt}` };
+              return { draft: `Draft asset for ${(input as { type: string }).type}: ${(input as { prompt: string }).prompt}` };
             },
           },
           {
@@ -289,9 +289,9 @@ import { NoopOutbox } from "../../shared/noop/noop-outbox";
             execute: async ({ input, workspaceId }) => {
               if (!workspaceId) return { error: "No workspace ID" };
               const contact = await prisma.launchOsOutreachContact.findFirst({
-                where: { workspaceId, id: (input as any).contactId },
+                where: { workspaceId, id: (input as { contactId: string }).contactId },
               });
-              return { contact, draft: `Draft follow up for ${contact?.name || 'Contact'} regarding ${(input as any).context}` };
+              return { contact, draft: `Draft follow up for ${contact?.name || 'Contact'} regarding ${(input as { context: string }).context}` };
             },
           },
           {
@@ -301,7 +301,7 @@ import { NoopOutbox } from "../../shared/noop/noop-outbox";
             kind: "server",
             needsApproval: false,
             execute: async ({ input }) => {
-              return { suggestions: [`Search LinkedIn for ${(input as any).query}`, `Search Twitter for ${(input as any).query}`] };
+              return { suggestions: [`Search LinkedIn for ${(input as { query: string }).query}`, `Search Twitter for ${(input as { query: string }).query}`] };
             },
           },
           {
@@ -328,9 +328,9 @@ import { NoopOutbox } from "../../shared/noop/noop-outbox";
                 data: {
                   tenantId,
                   workspaceId,
-                  title: (input as any).title,
-                  description: (input as any).description,
-                  phase: (input as any).phase || "execution",
+                  title: (input as { title: string }).title,
+                  description: (input as { description: string }).description,
+                  phase: (input as { phase?: string }).phase || "execution",
                   status: "todo",
                   stableKey: `task-${Date.now()}`
                 }

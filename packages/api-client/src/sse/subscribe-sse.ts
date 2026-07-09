@@ -140,7 +140,12 @@ const parseSseBlock = <TData>(
       data = parseData(rawData, event);
     } else {
       const parsed = tryParseJson<TData>(rawData);
-      data = parsed === null ? (rawData as unknown as TData) : parsed;
+      if (parsed === null) {
+        const rawUnknown: unknown = rawData;
+        data = rawUnknown as TData;
+      } else {
+        data = parsed;
+      }
     }
   }
 

@@ -12,8 +12,8 @@ describe('UpsertEngineeringContextUseCase', () => {
     };
 
     const useCase = new UpsertEngineeringContextUseCase({
-      engineeringContextRepository: mockRepo as any,
-      activityLogPort: mockLogger as any
+      engineeringContextRepository: mockRepo as unknown as ConstructorParameters<typeof UpsertEngineeringContextUseCase>[0]['engineeringContextRepository'],
+      activityLogPort: mockLogger as unknown as ConstructorParameters<typeof UpsertEngineeringContextUseCase>[0]['activityLogPort']
     });
 
     const result = await useCase.execute('t1', 'u1', { projectId: 'p1', projectSummaryMarkdown: 'Summary' });

@@ -102,6 +102,25 @@ export class DeterministicAgentExportGenerator implements AgentExportGeneratorPo
     if (input.specDetails.summary) md += `### Summary\n${input.specDetails.summary}\n\n`;
     if (input.specDetails.acceptanceCriteriaJson) md += `### Acceptance Criteria\n${JSON.stringify(input.specDetails.acceptanceCriteriaJson, null, 2)}\n\n`;
 
+    if (input.specDetails.documents && Array.isArray(input.specDetails.documents) && input.specDetails.documents.length > 0) {
+      md += `## Related Project Documents\n`;
+      input.specDetails.documents.forEach((doc: { id: string; title: string; type: string; summary?: string; contentJson?: unknown; assets?: { id: string; kind: string; fileName: string }[] }) => {
+        md += `### ${doc.title} (${doc.type})\n`;
+        if (doc.summary) md += `${doc.summary}\n\n`;
+        if (doc.contentJson) {
+           md += `> Document Content: ${JSON.stringify(doc.contentJson, null, 2)}\n\n`;
+        }
+        if (doc.assets && Array.isArray(doc.assets) && doc.assets.length > 0) {
+          md += `#### Attachments\n\n`;
+          doc.assets.forEach((asset: { id: string; kind: string; fileName: string }) => {
+            md += `- ${asset.kind === "pdf" ? "PDF" : "Image"}: ${asset.fileName}\n`;
+            md += `  Asset ID: ${asset.id}\n`;
+            md += `  Open in SpecGate: /documents/${doc.id}/assets/${asset.id}\n\n`;
+          });
+        }
+      });
+    }
+
     md += `## Project Engineering Context\n`;
     md += `See \`AGENTS.md\` or target-specific instructions for full details.\n\n`;
     if (input.validationCommands.length > 0) {
@@ -134,7 +153,7 @@ export class DeterministicAgentExportGenerator implements AgentExportGeneratorPo
   private createExport(targetAgentId: string, exportKind: string, filePath: string, contentMarkdown: string, createdBy: string) {
     return {
       targetAgentId,
-      exportKind: exportKind as any,
+      exportKind: exportKind as import('@corely/contracts').AgentExportDto['exportKind'],
       filePath,
       contentMarkdown,
       checksum: this.hash(contentMarkdown),

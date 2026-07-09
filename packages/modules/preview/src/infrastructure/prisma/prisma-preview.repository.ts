@@ -5,10 +5,10 @@ import type {
 import type { PreviewRepositoryPort } from "../../application/ports/preview-repository.port";
 
 type ModelClient = {
-  findMany(args?: unknown): Promise<any[]>;
-  findFirst(args?: unknown): Promise<any | null>;
-  create(args: unknown): Promise<any>;
-  update(args: unknown): Promise<any>;
+  findMany(args?: unknown): Promise<Record<string, unknown>[]>;
+  findFirst(args?: unknown): Promise<Record<string, unknown> | null>;
+  create(args: unknown): Promise<Record<string, unknown>>;
+  update(args: unknown): Promise<Record<string, unknown>>;
 };
 
 export class PrismaPreviewRepository implements PreviewRepositoryPort {

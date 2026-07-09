@@ -89,7 +89,7 @@ export class ReadinessChecker {
   checkSpecReadiness(
     projectId: string,
     specId: string,
-    specDetails: Record<string, any>,
+    specDetails: Record<string, unknown>,
     projectReadiness: AgentReadinessCheckDto
   ): AgentReadinessCheckDto {
     const checks: AgentReadinessCheckDto['checks'] = [];
@@ -131,7 +131,7 @@ export class ReadinessChecker {
     });
 
     // Check Request Document
-    const hasMeaningfulContent = !!specDetails.requestPlainText && specDetails.requestPlainText.trim().length > 20;
+    const hasMeaningfulContent = typeof specDetails.requestPlainText === "string" && specDetails.requestPlainText.trim().length > 20;
     checks.push({
       id: 'request_document',
       label: 'Request has meaningful content',
@@ -193,7 +193,7 @@ export class ReadinessChecker {
     }
 
     // Check Stale EC Export
-    const isStale = specDetails.updatedAt && projectReadiness && (new Date(specDetails.updatedAt) > new Date()); // Assume we pass in `context` or rely on project status
+    const isStale = specDetails.updatedAt && projectReadiness && (new Date(specDetails.updatedAt as string | number) > new Date()); // Assume we pass in `context` or rely on project status
     // For simplicity, we just add the checks the user requested as logic permits.
 
     const failedRequired = checks.filter(c => c.status === 'fail' && c.severity === 'required').length;

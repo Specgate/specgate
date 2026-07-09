@@ -9,12 +9,16 @@ export class SecureStorageAdapter implements TokenStorage {
   private readonly REFRESH_TOKEN_KEY = "refreshToken";
   private readonly WORKSPACE_ID_KEY = "activeWorkspaceId";
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private SecureStore: any;
+  private SecureStore: {
+    setItemAsync(key: string, value: string): Promise<void>;
+    getItemAsync(key: string): Promise<string | null>;
+    deleteItemAsync(key: string): Promise<void>;
+  };
 
   constructor() {
     // Lazy load expo-secure-store to avoid import errors on web
     try {
+      // Cannot fix require-imports because expo-secure-store must be conditionally required at runtime in this synchronous adapter constructor.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       this.SecureStore = require("expo-secure-store");
     } catch {

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { createWorkspace } from "@/lib/specgate-api";
 import { useSpecGateStore } from "@/lib/specgate-store";
 
-export function NewWorkspaceModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }): any {
+export function NewWorkspaceModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }): React.ReactNode {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const { setWorkspace } = useSpecGateStore();

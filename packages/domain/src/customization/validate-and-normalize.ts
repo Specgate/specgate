@@ -73,7 +73,7 @@ function normalizeValueForType(
     case "MONEY":
       return normalizeMoney(raw);
     default:
-      return raw as any;
+      return raw as Record<string, unknown>;
   }
 }
 

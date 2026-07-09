@@ -26,7 +26,7 @@ export class ResendEmailSenderAdapter implements EmailSenderPort {
   }
 
   async sendEmail(request: SendEmailRequest): Promise<SendEmailResponse> {
-    const emailOptions: any = {
+    const emailOptions: Record<string, unknown> = {
       from: this.fromAddress,
       to: request.to,
       subject: request.subject,

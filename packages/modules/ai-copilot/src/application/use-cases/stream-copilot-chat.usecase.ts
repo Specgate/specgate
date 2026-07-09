@@ -401,12 +401,13 @@ export class StreamCopilotChatUseCase {
     runId: string
   ) {
     for (const part of message.parts ?? []) {
-      const toolCallId = (part as any).toolCallId as string | undefined;
+      const partObj = part as Record<string, unknown>;
+      const toolCallId = partObj.toolCallId as string | undefined;
       if (!toolCallId) {
         continue;
       }
-      const toolName = (part as any).toolName ?? toolNameFromType(String(part.type));
-      const state = (part as any).state as string | undefined;
+      const toolName = (partObj.toolName as string | undefined) ?? toolNameFromType(String(part.type));
+      const state = partObj.state as string | undefined;
 
       if (state === "approval-requested") {
         try {
@@ -416,7 +417,7 @@ export class StreamCopilotChatUseCase {
             runId,
             toolCallId,
             toolName: toolName ?? "unknown",
-            inputJson: JSON.stringify((part as any).input ?? {}),
+            inputJson: JSON.stringify(partObj.input ?? {}),
             status: "pending-approval",
           });
         } catch {
@@ -428,7 +429,7 @@ export class StreamCopilotChatUseCase {
         try {
           await this.toolExecutions.complete(tenantId, runId, toolCallId, {
             status: "completed",
-            outputJson: JSON.stringify((part as any).output ?? {}),
+            outputJson: JSON.stringify(partObj.output ?? {}),
           });
           await this.outbox.enqueue({
             tenantId,
@@ -447,8 +448,8 @@ export class StreamCopilotChatUseCase {
             errorJson:
               state === "output-denied"
                 ? "tool denied"
-                : typeof (part as any).errorText === "string"
-                  ? (part as any).errorText
+                : typeof partObj.errorText === "string"
+                  ? partObj.errorText
                   : "tool_failed",
           });
         } catch {

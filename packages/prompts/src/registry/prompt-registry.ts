@@ -4,6 +4,8 @@ import {
   type PromptProviderPort,
   type PromptResolvedDefinition,
   type PromptRenderResult,
+  type PromptVariableValue,
+  type PromptVariablesMap,
   type PromptSelectionRule,
 } from "../types";
 import { hashPromptTemplate } from "../utils/hash";
@@ -26,7 +28,7 @@ export class PromptRegistry {
   render(
     promptId: string,
     context: PromptContext,
-    variables: Record<string, unknown> = {}
+    variables: PromptVariablesMap = {}
   ): PromptRenderResult {
     const resolved = this.get(promptId, context);
     const rendered = renderPrompt(promptId, resolved.version, variables);

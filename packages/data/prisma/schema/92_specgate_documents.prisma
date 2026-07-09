@@ -1,0 +1,82 @@
+model SpecGateDocument {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+
+  title           String
+  slug            String?
+  type            String
+  status          String   @default("draft")
+
+  summary         String?
+  contentJson     Json?
+  contentMarkdown String?
+
+  tags            String[] @default([])
+
+  createdById     String?
+  updatedById     String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+  archivedAt      DateTime? @db.Timestamptz(6)
+
+  assets          SpecGateDocumentAsset[]
+  specLinks       SpecGateSpecDocumentLink[]
+
+  project         SpecGateProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@index([tenantId, projectId, type])
+  @@index([tenantId, projectId, status])
+  @@unique([tenantId, projectId, slug])
+  @@map("specgate_documents")
+}
+
+model SpecGateDocumentAsset {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  documentId      String?
+
+  fileName        String
+  contentType     String
+  sizeBytes       Int
+  storageKey      String
+  bucket          String?
+  checksum        String?
+
+  kind            String
+  altText         String?
+  caption         String?
+
+  createdById     String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  document        SpecGateDocument? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId])
+  @@index([tenantId, projectId, documentId])
+  @@map("specgate_document_assets")
+}
+
+model SpecGateSpecDocumentLink {
+  id              String   @id @default(cuid())
+  tenantId        String
+  projectId       String
+  specId          String
+  documentId      String
+
+  relevance       String?
+  note            String?
+
+  createdById     String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  spec            SpecGateSpec     @relation(fields: [specId], references: [id], onDelete: Cascade)
+  document        SpecGateDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, projectId, specId])
+  @@index([tenantId, projectId, documentId])
+  @@unique([tenantId, projectId, specId, documentId])
+  @@map("specgate_spec_document_links")
+}

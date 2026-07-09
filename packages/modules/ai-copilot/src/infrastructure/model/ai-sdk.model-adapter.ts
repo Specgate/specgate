@@ -19,7 +19,7 @@ import {
   type ObservabilityPort,
   type ObservabilitySpanRef,
 } from "@corely/kernel";
-import { type LanguageModelUsage, type StreamTextResult } from "ai";
+import { type LanguageModelUsage, type StreamTextResult, type CoreTool } from "ai";
 import { type WorkspaceKind, PromptRegistry } from "@corely/prompts";
 import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../shared/prompts/prompt-context";
@@ -75,7 +75,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     environment?: string;
     intent?: string;
     observability: ObservabilitySpanRef;
-  }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
+  }): Promise<{ result: StreamTextResult<Record<string, CoreTool>, unknown>; usage?: LanguageModelUsage }> {
     const toolTenantId = params.toolTenantId ?? params.tenantId;
     const aiTools = buildAiTools(params.tools, {
       toolExecutions: this.toolExecutions,
@@ -510,7 +510,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     const { object } = await generateObject({
       model,
-      schema: params.schema as any,
+      schema: params.schema as import("zod").ZodType<T>,
       prompt: systemPrompt.content,
     });
 

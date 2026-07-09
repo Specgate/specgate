@@ -27,7 +27,7 @@ export interface GenerateSpecContextInput {
   rules: ProjectContextRuleDto[];
   adrs: ProjectAdrDto[];
   validationCommands: ValidationCommandDto[];
-  specDetails: Record<string, any>; // Pass spec details dynamically or strictly type it if needed
+  specDetails: Record<string, unknown>; // Pass spec details dynamically or strictly type it if needed
 }
 
 export interface AgentExportGeneratorPort {

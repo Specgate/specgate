@@ -2,9 +2,9 @@ import type { ImplementationRecord } from "../../domain/entities/implementation"
 import type { ImplementationRepositoryPort } from "../../application/ports/implementation-repository.port";
 
 type ModelClient = {
-  findFirst(args?: unknown): Promise<any | null>;
-  create(args: unknown): Promise<any>;
-  update(args: unknown): Promise<any>;
+  findFirst(args?: unknown): Promise<Record<string, unknown> | null>;
+  create(args: unknown): Promise<Record<string, unknown>>;
+  update(args: unknown): Promise<Record<string, unknown>>;
 };
 
 export class PrismaImplementationRepository implements ImplementationRepositoryPort {

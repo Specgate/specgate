@@ -3,8 +3,8 @@ import type { ActivityRecord } from "../../domain/entities/activity";
 import type { ActivityRepositoryPort } from "../../application/ports/activity-repository.port";
 
 type ModelClient = {
-  findMany(args?: unknown): Promise<any[]>;
-  create(args: unknown): Promise<any>;
+  findMany(args?: unknown): Promise<Array<ActivityRecord & { metadataJson: unknown }>>;
+  create(args: unknown): Promise<ActivityRecord & { metadataJson: unknown }>;
 };
 
 export class PrismaActivityRepository implements ActivityRepositoryPort {
@@ -30,7 +30,7 @@ export class PrismaActivityRepository implements ActivityRepositoryPort {
       })
       .then((rows) =>
         rows.map(
-          (row) => ({ ...row, metadata: row.metadataJson }) as ActivityRecord,
+          (row) => ({ ...row, metadata: row.metadataJson }),
         ),
       );
   }

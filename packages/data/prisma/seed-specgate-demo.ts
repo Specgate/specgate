@@ -195,7 +195,7 @@ export const specGateOtherTenantUsers = [
 // SEEDING AND RESET OPERATIONS
 // -------------------------------------------------------------
 
-export async function resetSpecGateDemo(prisma: any): Promise<void> {
+export async function resetSpecGateDemo(prisma: PrismaClient): Promise<void> {
   const tenants = ["tenant_demo", "tenant_other"];
 
   // Delete specgate models in dependency order
@@ -247,6 +247,9 @@ export async function resetSpecGateDemo(prisma: any): Promise<void> {
   await prisma.specGateProject.deleteMany({
     where: { tenantId: { in: tenants } }
   });
+  await prisma.specGateDocument.deleteMany({
+    where: { tenantId: { in: tenants } }
+  });
 
   // Delete tenant users & memberships
   const seededUserIds = [
@@ -267,7 +270,7 @@ export async function resetSpecGateDemo(prisma: any): Promise<void> {
   });
 }
 
-export async function seedSpecGateDemo(prisma: any): Promise<void> {
+export async function seedSpecGateDemo(prisma: PrismaClient): Promise<void> {
   const now = new Date("2026-06-29T10:00:00.000Z");
 
   // 1. Seed Tenants
@@ -2074,6 +2077,9 @@ export async function seedSpecGateDemo(prisma: any): Promise<void> {
 
   console.log("Seeding engineering context...");
   await seedEngineeringContext(prisma, "tenant_demo", "project_launchos", "u-ha");
+
+  console.log("Seeding documents...");
+  await seedDocuments(prisma, "tenant_demo", "project_launchos", "u-ha");
 }
 
 // -------------------------------------------------------------
@@ -2177,7 +2183,7 @@ if (isMain) {
   main();
 }
 
-async function seedEngineeringContext(prisma: any, tenantId: string, projectId: string, userId: string) {
+async function seedEngineeringContext(prisma: PrismaClient, tenantId: string, projectId: string, userId: string) {
   const context = await prisma.specGateEngineeringContext.create({
     data: {
       tenantId,
@@ -2226,3 +2232,104 @@ async function seedEngineeringContext(prisma: any, tenantId: string, projectId: 
     ]
   });
 }
+
+async function seedDocuments(prisma: PrismaClient, tenantId: string, projectId: string, userId: string) {
+  const documents = [
+    {
+      id: "doc_launchos_product_brief",
+      tenantId,
+      projectId,
+      title: "LaunchOS Product Brief",
+      type: "product_brief",
+      summary: "High-level overview of LaunchOS, its target audience, and key value propositions.",
+      contentJson: {
+        type: "doc",
+        content: [
+          { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "LaunchOS Product Brief" }] },
+          { type: "paragraph", content: [{ type: "text", text: "LaunchOS is a unified workspace for SaaS founders and indie hackers to manage their product launches." }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Target Audience" }] },
+          { type: "paragraph", content: [{ type: "text", text: "Solo founders, small cross-functional teams (Product, Design, Engineering) building SaaS applications." }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Core Value Proposition" }] },
+          { type: "paragraph", content: [{ type: "text", text: "Bridge the gap between product requirements and engineering execution using AI coding agents." }] }
+        ]
+      },
+      tags: ["brief", "overview", "vision"],
+      createdBy: userId,
+      updatedBy: userId,
+      createdAt: new Date("2026-06-01T10:00:00.000Z"),
+      updatedAt: new Date("2026-06-01T10:00:00.000Z")
+    },
+    {
+      id: "doc_launchos_user_personas",
+      tenantId,
+      projectId,
+      title: "Target User Personas",
+      type: "customer_research",
+      summary: "Detailed profiles of our core users: The Founder, The Product Lead, and The Developer.",
+      contentJson: {
+        type: "doc",
+        content: [
+          { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "User Personas" }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "1. The Founder (Admin)" }] },
+          { type: "paragraph", content: [{ type: "text", text: "Needs visibility into project progress. Approves specs and reviews staging previews before production deployment." }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "2. The Product Lead" }] },
+          { type: "paragraph", content: [{ type: "text", text: "Writes specs, links related documents, and manages the build queue. Focuses on 'what' to build." }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "3. The Developer" }] },
+          { type: "paragraph", content: [{ type: "text", text: "Uses Agent Handoff context to prompt their AI coding tools (e.g., Cursor, Claude). Focuses on 'how' to build." }] }
+        ]
+      },
+      tags: ["research", "personas", "users"],
+      createdBy: userId,
+      updatedBy: userId,
+      createdAt: new Date("2026-06-05T14:30:00.000Z"),
+      updatedAt: new Date("2026-06-05T14:30:00.000Z")
+    },
+    {
+      id: "doc_launchos_billing_rules",
+      tenantId,
+      projectId,
+      title: "Billing Limits Business Rules",
+      type: "business_rules",
+      summary: "Definitions of limits for Free vs Team plans.",
+      contentJson: {
+        type: "doc",
+        content: [
+          { type: "heading", attrs: { level: 1 }, content: [{ type: "text", text: "Billing Plan Limits" }] },
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Free Plan" }] },
+          { type: "bulletList", content: [
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "1 Workspace" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "1 Project" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Max 3 team members" }] }] }
+          ]},
+          { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: "Team Plan" }] },
+          { type: "bulletList", content: [
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Unlimited Workspaces" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Unlimited Projects" }] }] },
+            { type: "listItem", content: [{ type: "paragraph", content: [{ type: "text", text: "Unlimited team members ($20/user/mo)" }] }] }
+          ]}
+        ]
+      },
+      tags: ["billing", "rules", "monetization"],
+      createdBy: userId,
+      updatedBy: userId,
+      createdAt: new Date("2026-06-10T09:15:00.000Z"),
+      updatedAt: new Date("2026-06-10T09:15:00.000Z")
+    }
+  ];
+
+  for (const doc of documents) {
+    await prisma.specGateDocument.create({ data: doc });
+  }
+
+  // Link doc_launchos_billing_rules to REQ-006 Billing Plan Limits
+  await prisma.specGateSpecDocumentLink.create({
+    data: {
+      tenantId,
+      projectId,
+      specId: "spec_launchos_req_006",
+      documentId: "doc_launchos_billing_rules",
+      createdById: userId,
+    }
+  });
+}
+

@@ -6,6 +6,6 @@ export interface ActivityLogPort {
     actorId: string;
     type: string;
     message: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }): Promise<void>;
 }

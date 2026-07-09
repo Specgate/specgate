@@ -1,17 +1,18 @@
 import { createHash } from "crypto";
+import type { PromptVariablesMap, PromptVariableValue } from "../types";
 
 export const RENDER_ENGINE_VERSION = "1";
 
 export const hashPromptTemplate = (template: string, version: string) =>
   createHash("sha256").update(`${version}\n${template}\n${RENDER_ENGINE_VERSION}`).digest("hex");
 
-export const hashPromptRender = (templateHash: string, variables: Record<string, unknown>) => {
+export const hashPromptRender = (templateHash: string, variables: PromptVariablesMap) => {
   return createHash("sha256")
     .update(`${templateHash}\n${stableStringify(variables)}`)
     .digest("hex");
 };
 
-export const stableStringify = (value: unknown): string => {
+export const stableStringify = (value: PromptVariableValue | PromptVariablesMap | undefined): string => {
   if (value === null || value === undefined) {
     return String(value);
   }
@@ -19,7 +20,7 @@ export const stableStringify = (value: unknown): string => {
     return `[${value.map((item) => stableStringify(item)).join(",")}]`;
   }
   if (typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
+    const entries = Object.entries(value as PromptVariablesMap).sort(([a], [b]) =>
       a.localeCompare(b)
     );
     return `{${entries

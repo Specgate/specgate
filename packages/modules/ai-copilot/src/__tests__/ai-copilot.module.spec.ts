@@ -31,13 +31,13 @@ describe("AiCopilotModule", () => {
 
     // Check for repository providers
     const hasAgentRunRepo = providers.some(
-      (p: any) => p === PrismaAgentRunRepository || p.provide === PrismaAgentRunRepository
+      (p: Record<string, unknown>) => p === PrismaAgentRunRepository || p.provide === PrismaAgentRunRepository
     );
     const hasMessageRepo = providers.some(
-      (p: any) => p === PrismaMessageRepository || p.provide === PrismaMessageRepository
+      (p: Record<string, unknown>) => p === PrismaMessageRepository || p.provide === PrismaMessageRepository
     );
     const hasToolExecRepo = providers.some(
-      (p: any) => p === PrismaToolExecutionRepository || p.provide === PrismaToolExecutionRepository
+      (p: Record<string, unknown>) => p === PrismaToolExecutionRepository || p.provide === PrismaToolExecutionRepository
     );
 
     expect(hasAgentRunRepo).toBe(true);
@@ -46,28 +46,28 @@ describe("AiCopilotModule", () => {
 
     // Check for other key providers
     const hasToolRegistry = providers.some(
-      (p: any) => p === ToolRegistry || p.provide === ToolRegistry
+      (p: Record<string, unknown>) => p === ToolRegistry || p.provide === ToolRegistry
     );
     expect(hasToolRegistry).toBe(true);
 
     // Check for factory providers
-    const hasModelAdapter = providers.some((p: any) => p.provide === AiSdkModelAdapter);
+    const hasModelAdapter = providers.some((p: Record<string, unknown>) => p.provide === AiSdkModelAdapter);
     expect(hasModelAdapter).toBe(true);
 
-    const hasUseCase = providers.some((p: any) => p.provide === StreamCopilotChatUseCase);
+    const hasUseCase = providers.some((p: Record<string, unknown>) => p.provide === StreamCopilotChatUseCase);
     expect(hasUseCase).toBe(true);
 
     // Check for token providers
-    const hasClock = providers.some((p: any) => p.provide === "COPILOT_CLOCK");
+    const hasClock = providers.some((p: Record<string, unknown>) => p.provide === "COPILOT_CLOCK");
     expect(hasClock).toBe(true);
 
-    const hasTools = providers.some((p: any) => p.provide === COPILOT_TOOLS);
+    const hasTools = providers.some((p: Record<string, unknown>) => p.provide === COPILOT_TOOLS);
     expect(hasTools).toBe(true);
   });
 
   it("should configure AiSdkModelAdapter as factory provider", () => {
     const providers = Reflect.getMetadata("providers", AiCopilotModule);
-    const adapterProvider = providers.find((p: any) => p.provide === AiSdkModelAdapter);
+    const adapterProvider = providers.find((p: Record<string, unknown>) => p.provide === AiSdkModelAdapter);
 
     expect(adapterProvider).toBeDefined();
     expect(adapterProvider.useFactory).toBeDefined();
@@ -78,7 +78,7 @@ describe("AiCopilotModule", () => {
 
   it("should configure StreamCopilotChatUseCase as factory provider", () => {
     const providers = Reflect.getMetadata("providers", AiCopilotModule);
-    const useCaseProvider = providers.find((p: any) => p.provide === StreamCopilotChatUseCase);
+    const useCaseProvider = providers.find((p: Record<string, unknown>) => p.provide === StreamCopilotChatUseCase);
 
     expect(useCaseProvider).toBeDefined();
     expect(useCaseProvider.useFactory).toBeDefined();
@@ -89,7 +89,7 @@ describe("AiCopilotModule", () => {
 
   it("should have COPILOT_CLOCK configured with now() function", () => {
     const providers = Reflect.getMetadata("providers", AiCopilotModule);
-    const clockProvider = providers.find((p: any) => p.provide === "COPILOT_CLOCK");
+    const clockProvider = providers.find((p: Record<string, unknown>) => p.provide === "COPILOT_CLOCK");
 
     expect(clockProvider).toBeDefined();
     expect(clockProvider.useValue).toBeDefined();
@@ -103,7 +103,7 @@ describe("AiCopilotModule", () => {
 
   it("should have COPILOT_TOOLS configured", () => {
     const providers = Reflect.getMetadata("providers", AiCopilotModule);
-    const toolsProvider = providers.find((p: any) => p.provide === COPILOT_TOOLS);
+    const toolsProvider = providers.find((p: Record<string, unknown>) => p.provide === COPILOT_TOOLS);
 
     expect(toolsProvider).toBeDefined();
     expect(toolsProvider.useValue || toolsProvider.useFactory).toBeDefined();

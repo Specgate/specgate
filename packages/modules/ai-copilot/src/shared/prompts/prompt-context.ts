@@ -1,1 +1,1 @@
-export const buildPromptContext = (params: any) => ({ ...params.env, ...params });
+export const buildPromptContext = (params: { env?: Record<string, unknown>; [key: string]: unknown }) => ({ ...(params.env ?? {}), ...params });

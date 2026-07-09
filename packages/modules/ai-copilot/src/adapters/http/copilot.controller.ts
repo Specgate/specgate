@@ -292,7 +292,7 @@ export class CopilotController {
     requestId: string;
     workspaceId: string;
   } {
-    const ctx = toUseCaseContext(req as any);
+    const ctx = toUseCaseContext(req as unknown as Request);
     const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
     const toolTenantId = ctx.tenantId ?? tenantId;
     const userId = ctx.userId || "unknown";

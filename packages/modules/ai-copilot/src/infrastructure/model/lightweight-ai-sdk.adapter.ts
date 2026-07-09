@@ -33,7 +33,7 @@ export class LightweightAiSdkAdapter implements LanguageModelPort {
     });
   }
 
-  async streamChat(): Promise<any> {
+  async streamChat(): Promise<unknown> {
     throw new Error("streamChat is not supported in LightweightAiSdkAdapter");
   }
 
@@ -63,7 +63,7 @@ export class LightweightAiSdkAdapter implements LanguageModelPort {
 
     const { object } = await generateObject({
       model,
-      schema: params.schema as any,
+      schema: params.schema as import("zod").ZodType<T>,
       prompt: systemPrompt.content,
     });
 

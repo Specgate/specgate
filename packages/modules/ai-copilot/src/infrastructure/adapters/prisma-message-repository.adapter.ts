@@ -8,23 +8,26 @@ const extractTextFromPartsJson = (partsJson: string): string | undefined => {
     const parsed = JSON.parse(partsJson) as unknown;
     if (Array.isArray(parsed)) {
       const text = parsed
-        .map((part) =>
-          typeof part === "object" &&
-          part !== null &&
-          "type" in part &&
-          (part as { type?: string }).type === "text" &&
-          "text" in part &&
-          typeof (part as { text?: unknown }).text === "string"
-            ? (part as { text: string }).text
-            : ""
-        )
+        .map((part) => {
+          if (
+            typeof part === "object" &&
+            part !== null &&
+            "type" in part &&
+            (part as Record<string, unknown>).type === "text" &&
+            "text" in part &&
+            typeof (part as Record<string, unknown>).text === "string"
+          ) {
+            return (part as Record<string, unknown>).text as string;
+          }
+          return "";
+        })
         .join(" ")
         .replace(/\s+/g, " ")
         .trim();
       return text || undefined;
     }
     if (typeof parsed === "object" && parsed !== null && "content" in parsed) {
-      const content = (parsed as { content?: unknown }).content;
+      const content = (parsed as Record<string, unknown>).content;
       if (typeof content === "string" && content.trim()) {
         return content.trim();
       }
