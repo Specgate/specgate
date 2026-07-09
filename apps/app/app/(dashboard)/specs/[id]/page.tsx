@@ -205,7 +205,6 @@ export default function SpecDetailPage(): any {
       getAgentTargets().then((res) => setAgentTargets(res.data)).catch(() => {});
       getSpecAgentReadiness(spec).then((res) => setReadiness(res.data)).catch(() => {});
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spec?.id]);
 
   const dirty = useMemo(() => {
