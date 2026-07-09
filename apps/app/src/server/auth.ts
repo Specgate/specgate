@@ -413,16 +413,36 @@ export async function handleRefresh(request: Request): Promise<Response> {
   return Response.json({ accessToken });
 }
 
+/**
+ * POST /auth/logout
+ */
+export async function handleLogout(request: Request): Promise<Response> {
+  const body = await request.json().catch(() => ({})) as { refreshToken?: string };
+  const rawToken = body.refreshToken ?? "";
 
+  if (rawToken) {
+    const prisma = getPrisma();
+    await prisma.refreshToken.updateMany({
+      where: { tokenHash: hashCode(rawToken) },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  return new Response(null, { status: 204 });
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function extractBearer(request: Request): string | null {
+  const auth = request.headers.get("authorization") ?? "";
+  if (!auth.startsWith("Bearer ")) return null;
+  return auth.slice(7);
+}
 
 /** Dev: console.log the plain code. Prod: send email via Resend. */
 async function deliverOtp(email: string, code: string): Promise<void> {
   if (IS_DEV) {
-    console.log("\n┌─────────────────────────────────────────┐");
-    console.log(`│  🔑 OTP for ${email.padEnd(28)}│`);
-    console.log(`│      Code: ${code.padEnd(30)}│`);
-    console.log(`│      (expires in ${OTP_TTL_MINUTES} minutes)           │`);
-    console.log("└─────────────────────────────────────────┘\n");
+    console.warn(`[auth] OTP for ${email}: ${code} (expires in ${OTP_TTL_MINUTES} minutes)`);
     return;
   }
 
@@ -433,7 +453,7 @@ async function deliverOtp(email: string, code: string): Promise<void> {
   }
 
   const fromAddress = process.env.EMAIL_FROM ?? "noreply@specpilot.app";
-  console.log(`[auth] Sending OTP email to ${email} from ${fromAddress}`);
+  console.warn(`[auth] Sending OTP email to ${email} from ${fromAddress}`);
 
   const resendRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -453,7 +473,7 @@ async function deliverOtp(email: string, code: string): Promise<void> {
     throw new Error(`Failed to send verification email (Resend ${resendRes.status})`);
   }
 
-  console.log(`[auth] OTP email sent successfully to ${email}`);
+  console.warn(`[auth] OTP email sent successfully to ${email}`);
 }
 
 function slugify(value: string): string {
